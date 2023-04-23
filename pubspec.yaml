@@ -1,0 +1,27 @@
+name: cvmaker_app_sarah_proj
+description: A new Flutter project.
+publish_to: "none"
+version: 0.1.0
+
+environment:
+  sdk: ">=2.19.4 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  google_fonts: ^4.0.3
+  dio: ^5.1.1
+  http: any
+  shared_preferences:
+  get: ^4.6.5
+  flutter_quill: ^7.1.9
+
+dev_dependencies:
+  flutter_lints: ^2.0.1
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  assets:
+    - asset/cv-templates/
