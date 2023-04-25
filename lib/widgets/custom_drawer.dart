@@ -33,12 +33,30 @@ class CustomDrawer extends StatelessWidget {
           Align(
               alignment: Alignment.centerRight,
               child: CustomTextBtnWithIcon(
-                btnLabel: "Generate new CV",
+                  btnLabel: "Add/Update Personal Details",
+                  onPressed: () {
+                    Navigator.of(context).pushNamed("/form-personalDetail",
+                        arguments: {"masterScreen": "GenerateCV"});
+                  },
+                  icon: Icons.person_outline_outlined)),
+          Align(
+              alignment: Alignment.centerRight,
+              child: CustomTextBtnWithIcon(
+                btnLabel: "Generate Profile",
                 onPressed: () {
-                  Navigator.of(context).pushNamed("/generateCvScreen");
+                  Navigator.of(context).pushNamed("/form-generateObjective");
                 },
-                icon: Icons.create,
+                icon: Icons.summarize_outlined,
               )),
+          Align(
+            alignment: Alignment.centerRight,
+            child: CustomTextBtnWithIcon(
+                btnLabel: "Add/Update Education",
+                onPressed: () {
+                  Navigator.of(context).pushNamed("/form-educationSummary");
+                },
+                icon: Icons.book_outlined),
+          ),
           Align(
             alignment: Alignment.centerRight,
             child: CustomTextBtnWithIcon(
@@ -52,6 +70,15 @@ class CustomDrawer extends StatelessWidget {
           Align(
               alignment: Alignment.centerRight,
               child: CustomTextBtnWithIcon(
+                btnLabel: "Add/Update Work Ex.",
+                onPressed: () {
+                  Navigator.of(context).pushNamed("/form-workExperienceForm");
+                },
+                icon: Icons.work_outline,
+              )),
+          Align(
+              alignment: Alignment.centerRight,
+              child: CustomTextBtnWithIcon(
                 btnLabel: "Add/Update Hobbies",
                 onPressed: () {
                   Navigator.of(context).pushNamed("/form-hobbiesForm");
@@ -59,32 +86,23 @@ class CustomDrawer extends StatelessWidget {
                 icon: Icons.games_outlined,
               )),
           Align(
-            alignment: Alignment.centerRight,
-            child: CustomTextBtnWithIcon(
-                btnLabel: "Add/Update Education",
+              alignment: Alignment.centerRight,
+              child: CustomTextBtnWithIcon(
+                btnLabel: "Add/Update Language",
                 onPressed: () {
-                  Navigator.of(context).pushNamed("/form-educationSummary");
+                  Navigator.of(context).pushNamed("/form-languageForm");
                 },
-                icon: Icons.book_outlined),
-          ),
+                icon: Icons.language_outlined,
+              )),
+
           Align(
               alignment: Alignment.centerRight,
               child: CustomTextBtnWithIcon(
-                  btnLabel: "Add/Update Personal Details",
-                  onPressed: () {
-                    Navigator.of(context).pushNamed("/form-personalDetail", arguments: {
-                      "masterScreen": "GenerateCV"
-                    });
-                  },
-                  icon: Icons.person_outline_outlined)),
-          Align(
-              alignment: Alignment.centerRight,
-              child: CustomTextBtnWithIcon(
-                btnLabel: "Add/Update Work Ex.",
+                btnLabel: "Generate new CV",
                 onPressed: () {
-                  Navigator.of(context).pushNamed("/form-workExperienceForm");
+                  Navigator.of(context).pushNamed("/generateCvScreen");
                 },
-                icon: Icons.work_outline,
+                icon: Icons.create,
               )),
         ],
       ),

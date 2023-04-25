@@ -33,7 +33,6 @@ class CustomTextFields extends StatelessWidget {
         hintText: hintText,
         prefixIcon: icon != null ? Icon(icon) : null,
         counterText: "",
-
       ),
       enableInteractiveSelection: interactiveSelection,
       maxLength: maxLength,

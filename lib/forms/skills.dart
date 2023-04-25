@@ -6,7 +6,6 @@ import 'package:cvmaker_app_sarah_proj/widgets/textFields.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class SkillsForm extends StatefulWidget {
   const SkillsForm({Key? key}) : super(key: key);
@@ -18,6 +17,7 @@ class SkillsForm extends StatefulWidget {
 class _SkillsFormState extends State<SkillsForm> {
   final _skillsFormKey = GlobalKey<FormState>();
   final _skillsController = TextEditingController();
+  final _generatedSkillsController = TextEditingController();
   final _generatedDataStorageController = Get.put(FormDataLocalStorage());
   var _generatedSkills;
 
@@ -65,25 +65,26 @@ class _SkillsFormState extends State<SkillsForm> {
                             ? "SAVE"
                             : "REGENERATE",
                         onPressed: () async {
-                          _generatedSkills = "";
-                          generatingContent = true;
-                          setState(() {});
                           if (_skillsFormKey.currentState!.validate()) {
+                            _generatedSkills = "";
+                            generatingContent = true;
+                            setState(() {});
                             _generatedSkills = await AiHelper().generate(
                                 _skillsController.value.text, "skills");
+                            _generatedSkillsController.text = _generatedSkills;
                             generatingContent = false;
                             setState(() {});
                           }
                         },
                       ),
-                /**
+            /**
              *    BELOW LINES OF CODE WILL ONLY VISIBLE IN APP WHEN WE GET AN RESPONSE FROM CHATGPT API
              *    AND THEN STORE IT IN _generatedSkills
              */
                 const SizedBox(height: 30),
                 _generatedSkills.toString().isNotEmpty
                     ? TextFormField(
-                        initialValue: _generatedSkills.toString().trim(),
+                        controller: _generatedSkillsController,
                         maxLines: 10,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
@@ -97,7 +98,8 @@ class _SkillsFormState extends State<SkillsForm> {
                     ? CustomButton(
                         btnLabel: "SAVE",
                         onPressed: () {
-                          _generatedDataStorageController.saveSkills(_generatedSkills);
+                          _generatedDataStorageController
+                              .saveSkills(_generatedSkillsController.text);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(

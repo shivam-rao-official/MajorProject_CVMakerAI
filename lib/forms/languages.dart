@@ -7,27 +7,27 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 
-class EducationForm extends StatefulWidget {
-  const EducationForm({Key? key}) : super(key: key);
+class LanguageForm extends StatefulWidget {
+  const LanguageForm({Key? key}) : super(key: key);
 
   @override
-  State<EducationForm> createState() => _EducationFormState();
+  State<LanguageForm> createState() => _LanguageFormState();
 }
 
-class _EducationFormState extends State<EducationForm> {
-  final _educationSummaryFormKey = GlobalKey<FormState>();
-  final _educationSummaryController = TextEditingController();
+class _LanguageFormState extends State<LanguageForm> {
+  final _languageFormKey = GlobalKey<FormState>();
+  final _languageController = TextEditingController();
+  final _generatedLanguageController = TextEditingController();
   final _generatedDataStorageController = Get.put(FormDataLocalStorage());
-  final _generatedEducationController = TextEditingController();
 
-  var _generatedEducation;
-  bool generatingContent = false;
+  var _generatedLanguage;
+  bool _generateContent = false;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    _generatedEducation = "";
+    _generatedLanguage = "";
   }
 
   @override
@@ -36,7 +36,7 @@ class _EducationFormState extends State<EducationForm> {
       appBar: const PreferredSize(
         preferredSize: Size.fromHeight(61),
         child: CustomAppbar(
-          appBarLabel: "Education Summary Form",
+          appBarLabel: "Language",
           isActionBtnRequired: false,
         ),
       ),
@@ -44,53 +44,50 @@ class _EducationFormState extends State<EducationForm> {
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 20),
         child: SingleChildScrollView(
           child: Form(
-            key: _educationSummaryFormKey,
+            key: _languageFormKey,
             child: Column(
               children: [
                 const SizedBox(height: 20),
                 CustomTextFields(
-                  controller: _educationSummaryController,
-                  hintText: "Write a brief about your education summary...",
+                  controller: _languageController,
+                  hintText: "Write the languages you know separated by comma",
                   maxLines: 10,
                   validator: (val) {
-                    if (val == null || val.isEmpty)
-                      return "Education Summary is required";
+                    if (val == null || val.isEmpty) return null;
                     return null;
                   },
                 ),
                 const SizedBox(height: 20),
-                generatingContent
+                _generateContent
                     ? const CircularProgressIndicator()
                     : CustomButton(
-                        btnLabel: _generatedEducation.toString().isEmpty
-                            ? "SAVE"
-                            : "REGENERATE",
-                        onPressed: () async {
-                          if (_educationSummaryFormKey.currentState!
-                              .validate()) {
-                            _generatedEducation = "";
-                            generatingContent = true;
-                            setState(() {});
-                            _generatedEducation = await AiHelper().generate(
-                                _educationSummaryController.value.text,
-                                "education");
-                            _generatedEducationController.text = _generatedEducation;
-                            generatingContent = false;
-                            setState(() {});
-                          }
-                        },
-                      ),
+                  btnLabel: _generatedLanguage.toString().isEmpty
+                      ? "SAVE"
+                      : "REGENERATE",
+                  onPressed: () async {
+                    if (_languageFormKey.currentState!.validate()) {
+                      _generatedLanguage = "";
+                      _generateContent = true;
+                      setState(() {});
+                      _generatedLanguage = await AiHelper().generate(
+                          _languageController.value.text, "languages known");
+                      _generatedLanguageController.text = _generatedLanguage;
+                      _generateContent = false;
+                      setState(() {});
+                    }
+                  },
+                ),
                 /**
-             *    BELOW LINES OF CODE WILL ONLY VISIBLE IN APP WHEN WE GET AN RESPONSE FROM CHATGPT API
-             *    AND THEN STORE IT IN _generatedWrokExp
-             */
+                 *    BELOW LINES OF CODE WILL ONLY VISIBLE IN APP WHEN WE GET AN RESPONSE FROM CHATGPT API
+                 *    AND THEN STORE IT IN _generatedWrokExp
+                 */
                 const SizedBox(height: 30),
-                _generatedEducation.toString().isNotEmpty
+                _generatedLanguage.toString().isNotEmpty
                     ? TextFormField(
-                  controller: _generatedEducationController,
+                  controller: _generatedLanguageController,
                   maxLines: 10,
                   onSaved: (val) {
-                    _generatedEducationController.text = val!;
+                    _generatedLanguageController.text = val!;
                   },
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
@@ -100,11 +97,12 @@ class _EducationFormState extends State<EducationForm> {
                 )
                     : Container(),
                 const SizedBox(height: 20),
-                _generatedEducation.toString().isNotEmpty
+                _generatedLanguage.toString().isNotEmpty
                     ? CustomButton(
                   btnLabel: "SAVE",
                   onPressed: () {
-                    _generatedDataStorageController.saveEducation(_generatedEducationController.text.trim());
+                    _generatedDataStorageController
+                        .saveLanguage(_generatedLanguageController.text.trim());
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(

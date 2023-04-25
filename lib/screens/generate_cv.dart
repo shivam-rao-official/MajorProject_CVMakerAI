@@ -1,8 +1,13 @@
+import 'dart:io';
+
 import 'package:cvmaker_app_sarah_proj/FormDataStorage.dart';
+import 'package:cvmaker_app_sarah_proj/widgets/appbar.dart';
+import 'package:cvmaker_app_sarah_proj/widgets/header.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart';
+import 'package:flutter_quill/flutter_quill.dart' hide Text;
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 
 class GenerateCVScreen extends StatefulWidget {
   const GenerateCVScreen({Key? key}) : super(key: key);
@@ -12,369 +17,284 @@ class GenerateCVScreen extends StatefulWidget {
 }
 
 class _GenerateCVScreenState extends State<GenerateCVScreen> {
-  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   final _aiGeneratedDataController = Get.put(FormDataLocalStorage());
-  double skillsPositiondx = 0.0;
-  double skillsPositiondy = 0.0;
-  double educationPositiondx = 10.0;
-  double educationPositiondy = 10.0;
-  double hobbiesPositiondx = 20.0;
-  double hobbiesPositiondy = 20.0;
-  double workExpPositiondx = 30.0;
-  double workExpPositiondy = 30.0;
-  double personalPositiondx = 40.0;
-  double personalPositiondy = 40.0;
+  final _picker = ImagePicker();
+  File? _imageFile;
+  GlobalKey key = GlobalKey();
 
-  late final QuillController _quillHeaderController;
+
+  late final QuillController _quillEducationController;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     final headerDelta = Delta();
-    headerDelta.insert("${_aiGeneratedDataController.retrieveHeader()}\n");
-    _quillHeaderController = QuillController(
+    headerDelta.insert("${_aiGeneratedDataController.retrieveEducation()}\n");
+    _quillEducationController = QuillController(
       document: Document.fromDelta(headerDelta),
-      selection: TextSelection.collapsed(offset: 0),
+      selection: const TextSelection.collapsed(offset: 0),
     );
   }
 
-  // @override
-  // Widget build(BuildContext context) {
-  //   return SafeArea(
-  //     child: Scaffold(
-  //       body: Padding(
-  //         padding: const EdgeInsets.only(left: 18.0, right: 18.0),
-  //         child: Container(
-  //           child: Stack(
-  //             // fit: StackFit.expand,
-  //             children: [
-  //               /**
-  //          * HEADER
-  //          */
-  //               Positioned(
-  //                 top: 10,
-  //                 left: 10,
-  //                 child: GestureDetector(
-  //                   child: Container(
-  //                     child: QuillEditor.basic(
-  //                         controller: _quillHeaderController, readOnly: false),
-  //                   ),
-  //                 ),
-  //               ),
-  //               /**
-  //          * HEADER
-  //          */
-  //               GestureDetector(
-  //                 child: Container(
-  //                   child: QuillEditor.basic(
-  //                       controller: _quillHeaderController, readOnly: false),
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-  //       ),
-  //       floatingActionButton: Padding(
-  //         padding: const EdgeInsets.all(8.0),
-  //         child: QuillToolbar.basic(
-  //           controller: _quillHeaderController,
-  //           multiRowsDisplay: false,
-  //           toolbarIconSize: 25,
-  //           showSearchButton: false,
-  //           showStrikeThrough: false,
-  //           showBackgroundColorButton: false,
-  //           showHeaderStyle: false,
-  //           showClearFormat: false,
-  //           showCodeBlock: false,
-  //           showListCheck: false,
-  //         ),
-  //       ),
-  //       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-  //     ),
-  //   );
-  // }
-
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        body: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
+    return Scaffold(
+      appBar: const PreferredSize(
+        preferredSize: Size.fromHeight(40),
+        child: CustomAppbar(
+            appBarLabel: "Generate CV", isActionBtnRequired: false),
+      ),
+      body: RepaintBoundary(
+        key: key,
+        child: SingleChildScrollView(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              //HEADER SECTION
-              Container(
-                color: Colors.grey,
-                width: MediaQuery.of(context).size.width - 20,
-                height: 100,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Positioned(
-                      top: 10,
-                      left: 10,
-                      child: GestureDetector(
-                        child: Container(
-                          child: QuillEditor.basic(
-                              controller: _quillHeaderController,
-                              readOnly: false),
+              /**
+             * HEADER SECTION
+             */
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  GestureDetector(
+                    onTap: () => takePhoto(ImageSource.gallery),
+                    child: Container(
+                      color: Colors.green,
+                      height: 100,
+                      width: MediaQuery.of(context).size.width / 4,
+                      child: _imageFile == null ? const Placeholder(
+                        child: Center(
+                          child: Text("IMAGE"),
                         ),
+                      ): Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: FileImage(_imageFile!),
+                            fit: BoxFit.fill
+                          )
+                        ),
+                      )
+                    ),
+                  ),
+                  Container(
+                    color: Colors.yellow[200],
+                    height: 100,
+                    width: (MediaQuery.of(context).size.width - 10) -
+                        (MediaQuery.of(context).size.width / 4),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _aiGeneratedDataController.userName.value.isEmpty ? "{USER NAME}": _aiGeneratedDataController.userName.value,
+                            style: GoogleFonts.poppins(
+                                fontSize: 25,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.black54),
+                          ),
+                          Text(
+                            "STUDENT",
+                            style: GoogleFonts.poppins(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w400,
+                                fontStyle: FontStyle.italic),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
+                  ),
+                ],
+              ),
+              /**
+             * DETAILS SECTION
+             */
+              const SizedBox(
+                height: 20,
+              ),
+              header("DETAILS"),
+              Padding(
+                padding: const EdgeInsets.only(top: 10, left: 30.0, right: 30.0),
+                child: Text(
+                  _aiGeneratedDataController.retrieveHeader(),
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    letterSpacing: 1,
+                  ),
+                  textAlign: TextAlign.justify,
+                ),
+
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              header("PROFILE"),
+              Padding(
+                padding: const EdgeInsets.only(top: 10, left: 30.0, right: 30.0),
+                child: Text(
+                  _aiGeneratedDataController.retrieveProfile(),
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    letterSpacing: 1,
+                  ),
+                  textAlign: TextAlign.justify,
                 ),
               ),
-              Divider(
-                thickness: 2,
+              const SizedBox(
+                height: 20,
               ),
-              IntrinsicHeight(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Container(
-                      color: Colors.blue,
-                      height: MediaQuery.of(context).size.height - 20,
-                      width: MediaQuery.of(context).size.width / 2 - 20,
-                    ),
-                    VerticalDivider(
-                      thickness: 2,
-                    ),
-                    Container(
-                      color: Colors.green,
-                      height: MediaQuery.of(context).size.height - 20,
-                      width: MediaQuery.of(context).size.width / 2 - 20,
-                    ),
-                  ],
+              header("EDUCATION"),
+              Padding(
+                padding: const EdgeInsets.only(top: 10, left: 30.0, right: 30.0),
+                child: Text(
+                  _aiGeneratedDataController.retrieveEducation(),
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    letterSpacing: 1,
+                  ),
+                  textAlign: TextAlign.justify,
                 ),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              header("EMPLOYMENT HISTORY"),
+              Padding(
+                padding: const EdgeInsets.only(top: 10, left: 30.0, right: 30.0),
+                child: Text(
+                  _aiGeneratedDataController.retrieveWorkExp(),
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    letterSpacing: 1,
+                  ),
+                  textAlign: TextAlign.justify,
+                ),
+
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              header("SKILLS"),
+              Padding(
+                padding: const EdgeInsets.only(top: 10, left: 30.0, right: 30.0),
+                child: Text(_aiGeneratedDataController.retrieveSkills(),
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              header("LANGUAGES"),
+              Padding(
+                padding: const EdgeInsets.only(top: 10, left: 30.0, right: 30.0),
+                child: Text(_aiGeneratedDataController.retrieveLanguage(),
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    letterSpacing: 1,
+                  ),
+                  textAlign: TextAlign.justify,
+                ),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              header("HOBBIES"),
+              Padding(
+                padding: const EdgeInsets.only(top: 10, left: 30.0, right: 30.0),
+                child: Text(
+                  _aiGeneratedDataController.retrieveHobbies(),
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    letterSpacing: 1,
+                  ),
+                  textAlign: TextAlign.justify,
+                ),
+              ),
+              const SizedBox(
+                height: 20,
               ),
             ],
           ),
         ),
       ),
-    );
-  }
-
-/* @override
-  Widget build(BuildContext context) {
-    double textFieldSize = MediaQuery.of(context).size.width - 20;
-    return SafeArea(
-      child: Scaffold(
-        body: Stack(
-          fit: StackFit.expand,
-          children: [
-            Container(
-              child: Image.asset("asset/cv-templates/CV_Template1.png",
-                  fit: BoxFit.fitHeight),
-            ),
-            /**
-             *  PERSONAL DETAILS SECTION
-             */
-            Positioned(
-              top: personalPositiondx,
-              left: personalPositiondy,
-              child: GestureDetector(
-                onPanUpdate: (delta) => setState(() {
-                  personalPositiondy += delta.delta.dx;
-                  personalPositiondx += delta.delta.dy;
-                }),
-                child: SizedBox(
-                  width: textFieldSize,
-                  child: TextFormField(
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                    ),
-                    enabled: false,
-                    initialValue: _aiGeneratedDataController.retrieveHeader(),
-                    maxLines: 10,
-                    // maxLines: 20,
-                  ),
-                ),
-              ),
-            ),
-            /**
-             *  PERSONAL DETAILS SECTION ENDS HERE
-             */
-            /**
-             *  HOBBIES SECTION
-             */
-            Positioned(
-              top: hobbiesPositiondx,
-              left: hobbiesPositiondy,
-              child: GestureDetector(
-                onPanUpdate: (delta) => setState(() {
-                  hobbiesPositiondx += delta.delta.dy;
-                  hobbiesPositiondy += delta.delta.dx;
-                }),
-                child: SizedBox(
-                  width: textFieldSize,
-                  child: TextFormField(
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                    ),
-                    enabled: false,
-                    initialValue: _aiGeneratedDataController.retrieveHobbies(),
-                    maxLines: 10,
-                    // maxLines: 20,
-                  ),
-                ),
-              ),
-            ),
-            /**
-             *  HOBBIES SECTION ENDS HERE
-             */
-            /**
-             *  EDUCATION SECTION
-             */
-            Positioned(
-              top: educationPositiondx,
-              left: educationPositiondy,
-              child: GestureDetector(
-                onPanUpdate: (delta) => setState(() {
-                  educationPositiondx += delta.delta.dy;
-                  educationPositiondy += delta.delta.dx;
-                }),
-                child: SizedBox(
-                  width: textFieldSize,
-                  child: TextFormField(
-                    enabled: false,
-                    initialValue: _aiGeneratedDataController.retrieveEducation(),
-                    maxLines: 10,
-                    // maxLines: 20,
-                  ),
-                ),
-              ),
-            ),
-            /**
-             *  EDUCATION SECTION ENDS HERE
-             */
-            /**
-             *  WORKS SECTION
-             */
-            Positioned(
-              top: workExpPositiondx,
-              left: workExpPositiondy,
-              child: GestureDetector(
-                onPanUpdate: (delta) => setState(() {
-                  workExpPositiondx += delta.delta.dy;
-                  workExpPositiondy += delta.delta.dx;
-                }),
-                child: SizedBox(
-                  width: textFieldSize,
-                  child: TextFormField(
-                    enabled: false,
-                    initialValue: _aiGeneratedDataController.retrieveWorkExp(),
-                    maxLines: 10,
-                    // maxLines: 20,
-                  ),
-                ),
-              ),
-            ),
-            /**
-             *  WORKS SECTION ENDS HERE
-             */
-            /**
-         *  SKILLS SECTION
-         */
-            Positioned(
-              top: skillsPositiondx,
-              left: skillsPositiondy,
-              child: GestureDetector(
-                onPanUpdate: (delta) => setState(() {
-                  skillsPositiondx += delta.delta.dy;
-                  skillsPositiondy += delta.delta.dx;
-                }),
-                child: SizedBox(
-                  width: textFieldSize,
-                  child: TextFormField(
-                    enabled: false,
-                    initialValue: _aiGeneratedDataController.retrieveSkills(),
-                    maxLines: 10,
-                    // maxLines: 20,
-                  ),
-                ),
-              ),
-            ),
-            /**
-             *  SKILLS SECTION ENDS HERE
-             */
-          ],
-        ),
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.download),
+        onPressed: () {},
       ),
     );
   }
-*/
-}
 
-// class GenerateCVScreen extends StatefulWidget {
-//   const GenerateCVScreen({Key? key}) : super(key: key);
-//
-//   @override
-//   State<GenerateCVScreen> createState() => _GenerateCVScreenState();
-// }
-//
-// class _GenerateCVScreenState extends State<GenerateCVScreen> {
-//   final _cvForms = const [
-//     PersonalDetailsForm(masterScreen: ""),
-//     EducationForm(),
-//     WorkExperienceForm(),
-//   ];
-//
-//   int screenCounter = 0;
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       body: Column(
-//         children: [
-//           SizedBox(
-//             height: MediaQuery.of(context).size.height - 100,
-//             child: _cvForms[screenCounter],
-//           ),
-//           Row(
-//             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//             children: [
-//               screenCounter == 0
-//                   ? Container()
-//                   : CustomTextBtnWithIcon(
-//                       btnLabel: "Prev",
-//                       onPressed: () {
-//                         screenCounter != 0
-//                             ? screenCounter--
-//                             : screenCounter = 0;
-//                         setState(() {});
-//                       },
-//                       icon: Icons.navigate_before,
-//                     ),
-//               screenCounter == _cvForms.length-1
-//                   ? Padding(
-//                     padding: const EdgeInsets.only(right:8.0),
-//                     child: Align(
-//                         alignment: Alignment.center,
-//                         child: CustomButton(
-//                           btnLabel: "Submit",
-//                           onPressed: () {},
-//                         ),
-//                       ),
-//                   )
-//                   : Align(
-//                       alignment: Alignment.centerRight,
-//                       child: CustomTextBtnWithIcon(
-//                         btnLabel: "Next",
-//                         onPressed: () {
-//                           screenCounter != _cvForms.length -1
-//                               ? screenCounter++
-//                               : screenCounter = _cvForms.length;
-//                           setState(() {});
-//                         },
-//                         icon: Icons.navigate_next,
-//                       ),
-//                     ),
-//             ],
-//           )
-//         ],
-//       ),
-//     );
-//   }
-// }
+  void takePhoto(ImageSource source) async {
+    final pickedFile = await _picker.pickImage(
+      source: ImageSource.gallery,
+    );
+
+    // if (pickedFile != null) {
+    //   CroppedFile? _croppedImage = await ImageCropper().cropImage(
+    //     sourcePath: pickedFile.path,
+    //     compressFormat: ImageCompressFormat.jpg,
+    //     compressQuality: 50,
+    //     cropStyle: CropStyle.circle,
+    //     uiSettings: [
+    //       AndroidUiSettings(
+    //         hideBottomControls: true,
+    //         lockAspectRatio: true,
+    //         initAspectRatio: CropAspectRatioPreset.ratio4x3,
+    //       ),
+    //       IOSUiSettings(
+    //         hidesNavigationBar: true,
+    //         aspectRatioLockEnabled: true,
+    //       ),
+    //     ],
+    //   );
+    //
+    //   if (_croppedImage != null) {
+    //     final path = _croppedImage.path;
+    //       _imageFile = File(path);
+    //     // print("Cropped File =========> ${_imageFile!.path}");
+    //
+    //     // widget.controller.updateProfileImage(_imageFile);
+    //   }
+    //   // BaseController.showReload.value = false;
+    //   // widget.controller.updateProfileImage(File(pickedFile.path));
+    // }else {
+    //   _imageFile = File(pickedFile!.path);
+    // }
+    _imageFile = File(pickedFile!.path);
+    setState(() {});
+  }
+
+  // Future<void> saveAsPDF() async {
+  //   RenderRepaintBoundary boundary =
+  //   key.currentContext!.findRenderObject() as RenderRepaintBoundary;
+  //   ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+  //   ByteData? byteData =
+  //   await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+  //
+  //   final pdf = pw.Document();
+  //   pdf.addPage(pw.Page(
+  //     pageFormat: PdfPageFormat.a4,
+  //     build: (pw.Context context) {
+  //       return pw.Image(
+  //         PdfImage.file(
+  //           pdf.document,
+  //           bytes: byteData!.buffer.asUint8List(),
+  //         ) as pw.ImageProvider ,
+  //         width: image.width as double,
+  //         height: image.height as double,
+  //       );
+  //     },
+  //   ));
+  //
+  //   final bytes = await pdf.save();
+  //   final directory = await getApplicationDocumentsDirectory();
+  //   final file = File('${directory.path}/${_aiGeneratedDataController.userName}+${DateTime.now()}.pdf');
+  //   await file.writeAsBytes(bytes);
+  // }
+
+}

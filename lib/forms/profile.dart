@@ -4,30 +4,30 @@ import 'package:cvmaker_app_sarah_proj/widgets/appbar.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/genericBtn.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/textFields.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-class EducationForm extends StatefulWidget {
-  const EducationForm({Key? key}) : super(key: key);
+class ProfileForm extends StatefulWidget {
+  const ProfileForm({Key? key}) : super(key: key);
 
   @override
-  State<EducationForm> createState() => _EducationFormState();
+  State<ProfileForm> createState() => _ProfileFormState();
 }
 
-class _EducationFormState extends State<EducationForm> {
-  final _educationSummaryFormKey = GlobalKey<FormState>();
-  final _educationSummaryController = TextEditingController();
+class _ProfileFormState extends State<ProfileForm> {
+  final _profileFormKey = GlobalKey<FormState>();
+  final _profileController = TextEditingController();
+  final _generatedProfileController = TextEditingController();
   final _generatedDataStorageController = Get.put(FormDataLocalStorage());
-  final _generatedEducationController = TextEditingController();
 
-  var _generatedEducation;
+  var _generatedProfile;
   bool generatingContent = false;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    _generatedEducation = "";
+    _generatedProfile = "";
   }
 
   @override
@@ -36,7 +36,7 @@ class _EducationFormState extends State<EducationForm> {
       appBar: const PreferredSize(
         preferredSize: Size.fromHeight(61),
         child: CustomAppbar(
-          appBarLabel: "Education Summary Form",
+          appBarLabel: "CV Summary",
           isActionBtnRequired: false,
         ),
       ),
@@ -44,17 +44,15 @@ class _EducationFormState extends State<EducationForm> {
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 20),
         child: SingleChildScrollView(
           child: Form(
-            key: _educationSummaryFormKey,
+            key: _profileFormKey,
             child: Column(
               children: [
                 const SizedBox(height: 20),
                 CustomTextFields(
-                  controller: _educationSummaryController,
-                  hintText: "Write a brief about your education summary...",
-                  maxLines: 10,
+                  controller: _profileController,
+                  hintText: "Write few keywords to generate a profile/objective e.g, fresher etc.",
+                  maxLines: 5,
                   validator: (val) {
-                    if (val == null || val.isEmpty)
-                      return "Education Summary is required";
                     return null;
                   },
                 ),
@@ -62,36 +60,34 @@ class _EducationFormState extends State<EducationForm> {
                 generatingContent
                     ? const CircularProgressIndicator()
                     : CustomButton(
-                        btnLabel: _generatedEducation.toString().isEmpty
-                            ? "SAVE"
-                            : "REGENERATE",
-                        onPressed: () async {
-                          if (_educationSummaryFormKey.currentState!
-                              .validate()) {
-                            _generatedEducation = "";
-                            generatingContent = true;
-                            setState(() {});
-                            _generatedEducation = await AiHelper().generate(
-                                _educationSummaryController.value.text,
-                                "education");
-                            _generatedEducationController.text = _generatedEducation;
-                            generatingContent = false;
-                            setState(() {});
-                          }
-                        },
-                      ),
-                /**
-             *    BELOW LINES OF CODE WILL ONLY VISIBLE IN APP WHEN WE GET AN RESPONSE FROM CHATGPT API
-             *    AND THEN STORE IT IN _generatedWrokExp
-             */
-                const SizedBox(height: 30),
-                _generatedEducation.toString().isNotEmpty
-                    ? TextFormField(
-                  controller: _generatedEducationController,
-                  maxLines: 10,
-                  onSaved: (val) {
-                    _generatedEducationController.text = val!;
+                  btnLabel: _generatedProfile.toString().isEmpty
+                      ? "SAVE"
+                      : "REGENERATE",
+                  onPressed: () async {
+                    if (_profileFormKey.currentState!.validate()) {
+                      _generatedProfile = "";
+                      generatingContent = true;
+                      setState(() {});
+                      _generatedProfile = await AiHelper().generate(
+                          _profileController.value.text, "objective");
+                      _generatedProfileController.text = _generatedProfile;
+                      generatingContent = false;
+                      setState(() {});
+                    }
                   },
+                ),
+                /**
+                 *    BELOW LINES OF CODE WILL ONLY VISIBLE IN APP WHEN WE GET AN RESPONSE FROM CHATGPT API
+                 *    AND THEN STORE IT IN _generatedSkills
+                 */
+                const SizedBox(height: 30),
+                _generatedProfile.toString().isNotEmpty
+                    ? TextFormField(
+                  controller: _generatedProfileController,
+                  onSaved: (val) {
+                    _generatedProfileController.text = val!;
+                  },
+                  maxLines: 10,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(25),
@@ -100,11 +96,12 @@ class _EducationFormState extends State<EducationForm> {
                 )
                     : Container(),
                 const SizedBox(height: 20),
-                _generatedEducation.toString().isNotEmpty
+                _generatedProfile.toString().isNotEmpty
                     ? CustomButton(
                   btnLabel: "SAVE",
                   onPressed: () {
-                    _generatedDataStorageController.saveEducation(_generatedEducationController.text.trim());
+                    _generatedDataStorageController
+                        .saveProfile(_generatedProfileController.text.trim());
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(

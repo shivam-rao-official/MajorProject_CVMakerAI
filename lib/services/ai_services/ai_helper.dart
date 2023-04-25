@@ -8,8 +8,9 @@ class AiHelper {
 
   final _header = {
     "Content-Type": "application/json",
+    "Content-Type": "application/json",
     "Authorization":
-        "Bearer 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",
+        "Bearer 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",
   };
 
   Future<dynamic> generate(String skills, String module) async {

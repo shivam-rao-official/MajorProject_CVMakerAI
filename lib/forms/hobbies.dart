@@ -1,9 +1,11 @@
+import 'package:cvmaker_app_sarah_proj/FormDataStorage.dart';
 import 'package:cvmaker_app_sarah_proj/services/ai_services/ai_helper.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/appbar.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/genericBtn.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/textFields.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:get/get.dart';
 
 class HobbiesForm extends StatefulWidget {
   const HobbiesForm({Key? key}) : super(key: key);
@@ -15,8 +17,11 @@ class HobbiesForm extends StatefulWidget {
 class _HobbiesFormState extends State<HobbiesForm> {
   final _hobbiesFormKey = GlobalKey<FormState>();
   final _hobbiesController = TextEditingController();
+  final _generatedHobbyController = TextEditingController();
+  final _generatedDataStorageController = Get.put(FormDataLocalStorage());
 
   var _generatedHobbies;
+  bool _generateContent = false;
 
   @override
   void initState() {
@@ -46,49 +51,70 @@ class _HobbiesFormState extends State<HobbiesForm> {
                 CustomTextFields(
                   controller: _hobbiesController,
                   hintText: "Write few hobbies",
-                  maxLines: 30,
+                  maxLines: 10,
                   validator: (val) {
-                    if(val == null || val.isEmpty) return null;
+                    if (val == null || val.isEmpty) return null;
                     return null;
                   },
                 ),
                 const SizedBox(height: 20),
-                CustomButton(
-                  btnLabel: "SAVE",
-                  onPressed: () async{
-                    _generatedHobbies = "";
-                    setState(() {});
-                    if (_hobbiesFormKey.currentState!.validate()) {
-                      _generatedHobbies = await AiHelper()
-                          .generate(_hobbiesController.value.text, "hobbies");
-                      SharedPreferences _prefs = await SharedPreferences.getInstance();
-                      _prefs.setString("education", _generatedHobbies);
-                      setState(() {});
-                    }
-                  },
-                ),
+                _generateContent
+                    ? const CircularProgressIndicator()
+                    : CustomButton(
+                        btnLabel: _generatedHobbies.toString().isEmpty
+                            ? "SAVE"
+                            : "REGENERATE",
+                        onPressed: () async {
+                          if (_hobbiesFormKey.currentState!.validate()) {
+                            _generatedHobbies = "";
+                            _generateContent = true;
+                            setState(() {});
+                            _generatedHobbies = await AiHelper().generate(
+                                _hobbiesController.value.text, "hobbies");
+                            _generatedHobbyController.text = _generatedHobbies;
+                            _generateContent = false;
+                            setState(() {});
+                          }
+                        },
+                      ),
                 /**
-                 *    BELOW LINES OF CODE WILL ONLY VISIBLE IN APP WHEN WE GET AN RESPONSE FROM CHATGPT API
-                 *    AND THEN STORE IT IN _generatedWrokExp
-                 */
+             *    BELOW LINES OF CODE WILL ONLY VISIBLE IN APP WHEN WE GET AN RESPONSE FROM CHATGPT API
+             *    AND THEN STORE IT IN _generatedWrokExp
+             */
                 const SizedBox(height: 30),
                 _generatedHobbies.toString().isNotEmpty
                     ? TextFormField(
-                  initialValue: _generatedHobbies.toString().trim(),
-                  maxLines: 10,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                  ),
-                )
+                        controller: _generatedHobbyController,
+                        maxLines: 10,
+                        onSaved: (val) {
+                          _generatedHobbyController.text = val!;
+                        },
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                        ),
+                      )
                     : Container(),
                 const SizedBox(height: 20),
                 _generatedHobbies.toString().isNotEmpty
                     ? CustomButton(
-                  btnLabel: "SAVE",
-                  onPressed: () {},
-                )
+                        btnLabel: "SAVE",
+                        onPressed: () {
+                          _generatedDataStorageController
+                              .saveHobbies(_generatedHobbyController.text.trim());
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Data Saved',
+                                  style: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w900, fontSize: 20),
+                                ),
+                                backgroundColor: Colors.green,
+                              ),
+                          );
+                        },
+                      )
                     : Container(),
               ],
             ),

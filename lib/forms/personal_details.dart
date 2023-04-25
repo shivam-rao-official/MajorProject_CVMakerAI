@@ -21,13 +21,12 @@ class _PersonalDetailsFormState extends State<PersonalDetailsForm> {
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _linkedInController = TextEditingController();
+  final generatedDetailsController = TextEditingController();
 
   final _generatedDataStorageController = Get.put(FormDataLocalStorage());
 
   var _generatedHeader;
   bool generatingContent = false;
-
-  late final _quillController;
 
   @override
   void initState() {
@@ -110,6 +109,7 @@ class _PersonalDetailsFormState extends State<PersonalDetailsForm> {
                           .generate("Name: ${_nameController.value.text}, Email: ${_emailController.value.text},"
                           "Phone Number: ${_phoneController.value.text}, LinkedIn Profile Url: ${_linkedInController.value.text} ", "header");
                             generatingContent = false;
+                            generatedDetailsController.text = _generatedHeader;
                         setState(() {});
                     }
                   },
@@ -122,7 +122,10 @@ class _PersonalDetailsFormState extends State<PersonalDetailsForm> {
                 _generatedHeader.toString().isNotEmpty
                 // ? QuillEditor.basic(controller: _quillController, readOnly: false)
                     ? TextFormField(
-                        initialValue: _generatedHeader.toString().trim(),
+                        controller: generatedDetailsController,
+                        onSaved: (val){
+                          generatedDetailsController.text = val!;
+                        },
                         maxLines: 10,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
@@ -136,7 +139,7 @@ class _PersonalDetailsFormState extends State<PersonalDetailsForm> {
                     ? CustomButton(
                         btnLabel: "SAVE",
                         onPressed: () {
-                          _generatedDataStorageController.saveHeader(_generatedHeader);
+                          _generatedDataStorageController.saveHeader(generatedDetailsController.text.trim(), _nameController.text.trim());
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
