@@ -1,19 +1,23 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:cvmaker_app_sarah_proj/secretKey.dart';
 
 class AiHelper {
   final String _chatGptUrl = "https://api.openai.com/v1/completions";
-  final String _apiKey = "";
+  final String _apiKey = API_KEY;
 
-  final _header = {
-    "Content-Type": "application/json",
-    "Content-Type": "application/json",
-    "Authorization":
-        "Bearer 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",
-  };
+
 
   Future<dynamic> generate(String skills, String module) async {
+
+    final _header = {
+      "Content-Type": "application/json",
+      "Content-Type": "application/json",
+      "Authorization":
+      "Bearer $_apiKey",
+    };
+
     final body = jsonEncode({
       "model": "text-davinci-003",
       "prompt": "$skills generate a $module section for CV based on the information given",
