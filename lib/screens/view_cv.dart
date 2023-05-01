@@ -6,32 +6,40 @@ import 'package:cvmaker_app_sarah_proj/services/api_services/forms_service.dart'
 import 'package:cvmaker_app_sarah_proj/widgets/appbar.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/header.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' hide Text;
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 
-class GenerateCVScreen extends StatefulWidget {
-  const GenerateCVScreen({Key? key}) : super(key: key);
+class ViewCVScreen extends StatefulWidget {
+  final int cvId;
+
+  const ViewCVScreen(
+      {Key? key,
+      required this.cvId,
+     })
+      : super(key: key);
 
   @override
-  State<GenerateCVScreen> createState() => _GenerateCVScreenState();
+  State<ViewCVScreen> createState() => _ViewCVScreenState();
 }
 
-class _GenerateCVScreenState extends State<GenerateCVScreen> {
-  final _aiGeneratedDataController = Get.put(FormDataLocalStorage());
+class _ViewCVScreenState extends State<ViewCVScreen> {
   final _userService = Get.put(UserDataStorage());
   final _picker = ImagePicker();
   File? _imageFile;
   GlobalKey key = GlobalKey();
 
-  late final QuillController _quillEducationController;
+  String? education;
+  String? profile;
+  String? skills;
+  String? languages;
+  String? hobbies;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    // loadData();
+    loadData();
   }
 
   @override
@@ -39,8 +47,7 @@ class _GenerateCVScreenState extends State<GenerateCVScreen> {
     return Scaffold(
       appBar: const PreferredSize(
         preferredSize: Size.fromHeight(40),
-        child: CustomAppbar(
-            appBarLabel: "Generate CV", isActionBtnRequired: false),
+        child: CustomAppbar(appBarLabel: "View CV", isActionBtnRequired: false),
       ),
       body: RepaintBoundary(
         key: key,
@@ -130,12 +137,12 @@ class _GenerateCVScreenState extends State<GenerateCVScreen> {
               const SizedBox(
                 height: 20,
               ),
-              _aiGeneratedDataController.retrieveProfile().isNotEmpty?header("PROFILE"):Container(),
+                   header("PROFILE"),
               Padding(
                 padding:
                     const EdgeInsets.only(top: 10, left: 30.0, right: 30.0),
                 child: Text(
-                  _aiGeneratedDataController.retrieveProfile(),
+                  profile!,
                   style: GoogleFonts.poppins(
                     fontSize: 15,
                     letterSpacing: 1,
@@ -146,12 +153,12 @@ class _GenerateCVScreenState extends State<GenerateCVScreen> {
               const SizedBox(
                 height: 20,
               ),
-              _aiGeneratedDataController.retrieveEducation().isNotEmpty?header("EDUCATION"):Container(),
+                  header("EDUCATION"),
               Padding(
                 padding:
                     const EdgeInsets.only(top: 10, left: 30.0, right: 30.0),
                 child: Text(
-                  _aiGeneratedDataController.retrieveEducation(),
+                  education!,
                   style: GoogleFonts.poppins(
                     fontSize: 15,
                     letterSpacing: 1,
@@ -162,19 +169,22 @@ class _GenerateCVScreenState extends State<GenerateCVScreen> {
               const SizedBox(
                 height: 20,
               ),
-              _aiGeneratedDataController.retrieveWorkExp() != "No Work Experience Added"?header("EXPERIENCE"):Container(),
-              _aiGeneratedDataController.retrieveWorkExp() != "No Work Experience Added" ? Padding(
-                padding:
-                    const EdgeInsets.only(top: 10, left: 30.0, right: 30.0),
-                child: Text(
-                  _aiGeneratedDataController.retrieveWorkExp(),
-                  style: GoogleFonts.poppins(
-                    fontSize: 15,
-                    letterSpacing: 1,
-                  ),
-                  textAlign: TextAlign.justify,
-                ),
-              ):Container(),
+              // _aiGeneratedDataController.retrieveWorkExp() !=
+              //         "No Work Experience Added"
+              //     ? header("EXPERIENCE"),
+              //     ? Padding(
+              //         padding: const EdgeInsets.only(
+              //             top: 10, left: 30.0, right: 30.0),
+              //         child: Text(
+              //           "workExp",
+              //           style: GoogleFonts.poppins(
+              //             fontSize: 15,
+              //             letterSpacing: 1,
+              //           ),
+              //           textAlign: TextAlign.justify,
+              //         ),
+              //       )
+              //     : Container(),
               const SizedBox(
                 height: 20,
               ),
@@ -183,7 +193,7 @@ class _GenerateCVScreenState extends State<GenerateCVScreen> {
                 padding:
                     const EdgeInsets.only(top: 10, left: 30.0, right: 30.0),
                 child: Text(
-                  _aiGeneratedDataController.retrieveSkills(),
+                  skills!,
                   style: GoogleFonts.poppins(
                     fontSize: 15,
                     letterSpacing: 1,
@@ -198,7 +208,7 @@ class _GenerateCVScreenState extends State<GenerateCVScreen> {
                 padding:
                     const EdgeInsets.only(top: 10, left: 30.0, right: 30.0),
                 child: Text(
-                  _aiGeneratedDataController.retrieveLanguage(),
+                  languages!,
                   style: GoogleFonts.poppins(
                     fontSize: 15,
                     letterSpacing: 1,
@@ -214,7 +224,7 @@ class _GenerateCVScreenState extends State<GenerateCVScreen> {
                 padding:
                     const EdgeInsets.only(top: 10, left: 30.0, right: 30.0),
                 child: Text(
-                  _aiGeneratedDataController.retrieveHobbies(),
+                  hobbies!,
                   style: GoogleFonts.poppins(
                     fontSize: 15,
                     letterSpacing: 1,
@@ -240,72 +250,12 @@ class _GenerateCVScreenState extends State<GenerateCVScreen> {
     final pickedFile = await _picker.pickImage(
       source: ImageSource.gallery,
     );
-
-    // if (pickedFile != null) {
-    //   CroppedFile? _croppedImage = await ImageCropper().cropImage(
-    //     sourcePath: pickedFile.path,
-    //     compressFormat: ImageCompressFormat.jpg,
-    //     compressQuality: 50,
-    //     cropStyle: CropStyle.circle,
-    //     uiSettings: [
-    //       AndroidUiSettings(
-    //         hideBottomControls: true,
-    //         lockAspectRatio: true,
-    //         initAspectRatio: CropAspectRatioPreset.ratio4x3,
-    //       ),
-    //       IOSUiSettings(
-    //         hidesNavigationBar: true,
-    //         aspectRatioLockEnabled: true,
-    //       ),
-    //     ],
-    //   );
-    //
-    //   if (_croppedImage != null) {
-    //     final path = _croppedImage.path;
-    //       _imageFile = File(path);
-    //     // print("Cropped File =========> ${_imageFile!.path}");
-    //
-    //     // widget.controller.updateProfileImage(_imageFile);
-    //   }
-    //   // BaseController.showReload.value = false;
-    //   // widget.controller.updateProfileImage(File(pickedFile.path));
-    // }else {
-    //   _imageFile = File(pickedFile!.path);
-    // }
     _imageFile = File(pickedFile!.path);
     setState(() {});
   }
 
-  // void loadData() async{
-  //   await FormsService().fetchEducation(_userService.retrieveId());
-  // }
+  void loadData() async{
+   await FormsService().fetchCv(widget.cvId);
+  }
 
-// Future<void> saveAsPDF() async {
-//   RenderRepaintBoundary boundary =
-//   key.currentContext!.findRenderObject() as RenderRepaintBoundary;
-//   ui.Image image = await boundary.toImage(pixelRatio: 3.0);
-//   ByteData? byteData =
-//   await image.toByteData(format: ui.ImageByteFormat.rawRgba);
-//
-//   final pdf = pw.Document();
-//   pdf.addPage(pw.Page(
-//     pageFormat: PdfPageFormat.a4,
-//     build: (pw.Context context) {
-//       return pw.Image(
-//         PdfImage.file(
-//           pdf.document,
-//           bytes: byteData!.buffer.asUint8List(),
-//         ) as pw.ImageProvider ,
-//         width: image.width as double,
-//         height: image.height as double,
-//       );
-//     },
-//   ));
-//
-//   final bytes = await pdf.save();
-//   final directory = await getApplicationDocumentsDirectory();
-//   final file = File('${directory.path}/${_aiGeneratedDataController.userName}+${DateTime.now()}.pdf');
-//   await file.writeAsBytes(bytes);
-// }
 }
-

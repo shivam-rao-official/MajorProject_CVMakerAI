@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class FormDataLocalStorage extends GetxController {
@@ -15,23 +14,15 @@ class FormDataLocalStorage extends GetxController {
 
   void saveSkills(String skills) {
     this.skills.value = skills;
-    // skills = skills.trim();
-    // List<String> lines = skills.split("\n");
-    // for(String line in lines) {
-    //   List<String> part = line[]
-    // }
-    // print(skillArr.value);
   }
 
   String retrieveSkills() {
     if (skills.isEmpty) return "No Skills Added";
     return skills.value;
-    // if (skillArr.isEmpty) return "No Skills Added";
-    // return skillArr.value;
   }
-  void saveHeader(String header, String usrname) {
+  void saveHeader(String header, String username) {
     this.header.value = header;
-    userName.value = usrname;
+    userName.value = username;
   }
 
   String retrieveHeader() {

@@ -1,8 +1,11 @@
 import 'package:cvmaker_app_sarah_proj/FormDataStorage.dart';
+import 'package:cvmaker_app_sarah_proj/UserDataStorage.dart';
 import 'package:cvmaker_app_sarah_proj/services/ai_services/ai_helper.dart';
+import 'package:cvmaker_app_sarah_proj/services/api_services/forms_service.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/appbar.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/genericBtn.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/textFields.dart';
+import 'package:cvmaker_app_sarah_proj/widgets/toast_msg.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,6 +23,7 @@ class _WorkExperienceFormState extends State<WorkExperienceForm> {
   final _workExpController = TextEditingController();
   final _generatedWorkExpController = TextEditingController();
   final _generatedDataStorageController = Get.put(FormDataLocalStorage());
+  final _userService = Get.put(UserDataStorage());
 
   var _generatedWorkExp;
   bool _generatingContent = false;
@@ -102,10 +106,16 @@ class _WorkExperienceFormState extends State<WorkExperienceForm> {
                 _generatedWorkExp.toString().isNotEmpty
                     ? CustomButton(
                   btnLabel: "SAVE",
-                  onPressed: () {
+                  onPressed: () async{
+                    Map<String, String> workExp = {
+                      "userGivenString": _workExpController.text,
+                      "aiGeneratedText": _generatedWorkExpController.text.trim()
+                    };
+                    var resp = await FormsService().addWorkExp(_userService.retrieveId(), workExp);
+
                     _generatedDataStorageController
                         .saveWorkExp(_generatedWorkExpController.text.trim());
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    resp == 201?ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
                           'Data Saved',
@@ -114,7 +124,7 @@ class _WorkExperienceFormState extends State<WorkExperienceForm> {
                         ),
                         backgroundColor: Colors.green,
                       ),
-                    );
+                    ): ToastMsg().errorToast("Something went wrong");
                   },
                 )
                     : Container(),

@@ -1,3 +1,4 @@
+import 'package:cvmaker_app_sarah_proj/UserDataStorage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -21,6 +22,7 @@ class CustomAppbar extends StatelessWidget {
       actions:  isActionBtnRequired ? [
         IconButton(
           onPressed: () {
+            UserDataStorage().saveUserData("", "", "", "", "");
             Navigator.of(context).pushReplacementNamed("/login");
           },
           icon: const Icon(Icons.power_settings_new_rounded),

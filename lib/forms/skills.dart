@@ -1,8 +1,11 @@
 import 'package:cvmaker_app_sarah_proj/FormDataStorage.dart';
+import 'package:cvmaker_app_sarah_proj/UserDataStorage.dart';
 import 'package:cvmaker_app_sarah_proj/services/ai_services/ai_helper.dart';
+import 'package:cvmaker_app_sarah_proj/services/api_services/forms_service.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/appbar.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/genericBtn.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/textFields.dart';
+import 'package:cvmaker_app_sarah_proj/widgets/toast_msg.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -19,6 +22,8 @@ class _SkillsFormState extends State<SkillsForm> {
   final _skillsController = TextEditingController();
   final _generatedSkillsController = TextEditingController();
   final _generatedDataStorageController = Get.put(FormDataLocalStorage());
+  final _userService = Get.put(UserDataStorage());
+
   var _generatedSkills;
 
   bool generatingContent = false;
@@ -97,10 +102,16 @@ class _SkillsFormState extends State<SkillsForm> {
                 _generatedSkills.toString().isNotEmpty
                     ? CustomButton(
                         btnLabel: "SAVE",
-                        onPressed: () {
+                        onPressed: () async{
+                          Map<String, String> skills = {
+                            "userGivenString": _skillsController.text,
+                            "aiGeneratedText": _generatedSkillsController.text.trim()
+                          };
+                          var resp = await FormsService().addSkills(_userService.retrieveId(), skills);
+
                           _generatedDataStorageController
-                              .saveSkills(_generatedSkillsController.text);
-                          ScaffoldMessenger.of(context).showSnackBar(
+                              .saveSkills(_generatedSkillsController.text.trim());
+                          resp == 201 ?ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
                                 'Data Saved',
@@ -109,7 +120,7 @@ class _SkillsFormState extends State<SkillsForm> {
                               ),
                               backgroundColor: Colors.green,
                             ),
-                          );
+                          ): ToastMsg().errorToast("Something went wrong");
                         },
                       )
                     : Container(),

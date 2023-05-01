@@ -1,8 +1,11 @@
 import 'package:cvmaker_app_sarah_proj/FormDataStorage.dart';
+import 'package:cvmaker_app_sarah_proj/UserDataStorage.dart';
 import 'package:cvmaker_app_sarah_proj/services/ai_services/ai_helper.dart';
+import 'package:cvmaker_app_sarah_proj/services/api_services/forms_service.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/appbar.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/genericBtn.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/textFields.dart';
+import 'package:cvmaker_app_sarah_proj/widgets/toast_msg.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
@@ -19,6 +22,7 @@ class _EducationFormState extends State<EducationForm> {
   final _educationSummaryController = TextEditingController();
   final _generatedDataStorageController = Get.put(FormDataLocalStorage());
   final _generatedEducationController = TextEditingController();
+  final _userService = Get.put(UserDataStorage());
 
   var _generatedEducation;
   bool generatingContent = false;
@@ -103,9 +107,14 @@ class _EducationFormState extends State<EducationForm> {
                 _generatedEducation.toString().isNotEmpty
                     ? CustomButton(
                   btnLabel: "SAVE",
-                  onPressed: () {
+                  onPressed: () async{
+                    Map<String, String> education = {
+                      "userGivenString": _educationSummaryController.text,
+                      "aiGeneratedText": _generatedEducationController.text.trim()
+                    };
+                    var resp = await FormsService().addEducation(_userService.retrieveId(), education);
                     _generatedDataStorageController.saveEducation(_generatedEducationController.text.trim());
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    resp == 201 ? ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
                           'Data Saved',
@@ -114,7 +123,7 @@ class _EducationFormState extends State<EducationForm> {
                         ),
                         backgroundColor: Colors.green,
                       ),
-                    );
+                    ): ToastMsg().errorToast("Something went wrong");
                   },
                 )
                     : Container(),

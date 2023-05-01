@@ -13,7 +13,6 @@ class AiHelper {
 
     final _header = {
       "Content-Type": "application/json",
-      "Content-Type": "application/json",
       "Authorization":
       "Bearer $_apiKey",
     };

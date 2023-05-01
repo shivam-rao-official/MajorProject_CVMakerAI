@@ -9,15 +9,33 @@ import 'package:cvmaker_app_sarah_proj/screens/generate_cv.dart';
 import 'package:cvmaker_app_sarah_proj/screens/home.dart';
 import 'package:cvmaker_app_sarah_proj/screens/login.dart';
 import 'package:cvmaker_app_sarah_proj/screens/register.dart';
+import 'package:cvmaker_app_sarah_proj/screens/view_cv.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import 'UserDataStorage.dart';
 
 void main() {
   runApp(const MainApp());
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends StatefulWidget {
   const MainApp({super.key});
 
+  @override
+  State<MainApp> createState() => _MainAppState();
+}
+
+class _MainAppState extends State<MainApp> {
+  var _userService = Get.put(UserDataStorage());
+  var id;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    id = _userService.retrieveId();
+    print(id);
+  }
   @override
   Widget build(BuildContext context) {
 
@@ -34,8 +52,8 @@ class MainApp extends StatelessWidget {
         "/form-languageForm": (context) => const LanguageForm(),
         "/form-generateObjective": (context) => const ProfileForm(),
         "/generateCvScreen": (context) => const GenerateCVScreen(),
-      },
-      home: RegisterScreen(),
+         },
+      home: _userService.retrieveId().isEmpty ? const RegisterScreen(): const HomeScreen(),
     );
   }
 }

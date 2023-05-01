@@ -1,8 +1,11 @@
 import 'package:cvmaker_app_sarah_proj/FormDataStorage.dart';
+import 'package:cvmaker_app_sarah_proj/UserDataStorage.dart';
 import 'package:cvmaker_app_sarah_proj/services/ai_services/ai_helper.dart';
+import 'package:cvmaker_app_sarah_proj/services/api_services/forms_service.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/appbar.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/genericBtn.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/textFields.dart';
+import 'package:cvmaker_app_sarah_proj/widgets/toast_msg.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
@@ -19,6 +22,7 @@ class _LanguageFormState extends State<LanguageForm> {
   final _languageController = TextEditingController();
   final _generatedLanguageController = TextEditingController();
   final _generatedDataStorageController = Get.put(FormDataLocalStorage());
+  final _userService = Get.put(UserDataStorage());
 
   var _generatedLanguage;
   bool _generateContent = false;
@@ -100,10 +104,15 @@ class _LanguageFormState extends State<LanguageForm> {
                 _generatedLanguage.toString().isNotEmpty
                     ? CustomButton(
                   btnLabel: "SAVE",
-                  onPressed: () {
+                  onPressed: () async{
+                    Map<String, String> education = {
+                      "userGivenString": _languageController.text,
+                      "aiGeneratedText": _generatedLanguageController.text.trim()
+                    };
+                    var resp = await FormsService().addLanguage(_userService.retrieveId(), education);
                     _generatedDataStorageController
                         .saveLanguage(_generatedLanguageController.text.trim());
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    resp == 201 ? ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
                           'Data Saved',
@@ -112,7 +121,7 @@ class _LanguageFormState extends State<LanguageForm> {
                         ),
                         backgroundColor: Colors.green,
                       ),
-                    );
+                    ): ToastMsg().errorToast("Something went wrong");
                   },
                 )
                     : Container(),

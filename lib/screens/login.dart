@@ -1,8 +1,12 @@
+import 'package:cvmaker_app_sarah_proj/services/api_services/UserService.dart';
 import 'package:cvmaker_app_sarah_proj/utils/otp_timer.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/genericBtn.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/textBtn.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/textFields.dart';
+import 'package:cvmaker_app_sarah_proj/widgets/toast_msg.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -56,9 +60,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     alignment: Alignment.centerRight,
                     child: CustomTextButton(
                       btnLabel: "Get OTP",
-                      onPressed: () {
-                        // Navigator.of(context).pushReplacementNamed("/register");
-                        // const OtpTimer(otpTimer: 30,);
+                      onPressed: () async {
+                        if (_loginFormKey.currentState!.validate() || _emailController.text.isNotEmpty) {
+                          var generatedOtp = await UserService().generateOtp(_emailController.text);
+                          if(generatedOtp != null) {
+                            ToastMsg().successToast("Your OTP is ${generatedOtp.toString()}");
+                          }
+                        }
                       },
                     ),
                   ),
@@ -78,9 +86,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 30),
                   CustomButton(
-                    onPressed: () {
+                    onPressed: () async{
                       if (_loginFormKey.currentState!.validate()) {
-                        Navigator.of(context).pushReplacementNamed("/home");
+                        var resp = await UserService().login(_emailController.text, _otpController.text);
+                        if(resp == "OK") {
+                          ToastMsg().successToast("LOGIN success");
+                          Navigator.of(context).pushReplacementNamed("/home");
+                        }
+                        else {
+                          ToastMsg().errorToast("Login Failed");
+                        }
                       }
                     },
                     btnLabel: "LOGIN",

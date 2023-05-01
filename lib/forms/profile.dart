@@ -1,8 +1,11 @@
 import 'package:cvmaker_app_sarah_proj/FormDataStorage.dart';
+import 'package:cvmaker_app_sarah_proj/UserDataStorage.dart';
 import 'package:cvmaker_app_sarah_proj/services/ai_services/ai_helper.dart';
+import 'package:cvmaker_app_sarah_proj/services/api_services/forms_service.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/appbar.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/genericBtn.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/textFields.dart';
+import 'package:cvmaker_app_sarah_proj/widgets/toast_msg.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -19,8 +22,10 @@ class _ProfileFormState extends State<ProfileForm> {
   final _profileController = TextEditingController();
   final _generatedProfileController = TextEditingController();
   final _generatedDataStorageController = Get.put(FormDataLocalStorage());
+  final _userStorage = Get.put(UserDataStorage());
 
   var _generatedProfile;
+
   bool generatingContent = false;
 
   @override
@@ -61,7 +66,7 @@ class _ProfileFormState extends State<ProfileForm> {
                     ? const CircularProgressIndicator()
                     : CustomButton(
                   btnLabel: _generatedProfile.toString().isEmpty
-                      ? "SAVE"
+                      ? "GENERATE"
                       : "REGENERATE",
                   onPressed: () async {
                     if (_profileFormKey.currentState!.validate()) {
@@ -99,10 +104,15 @@ class _ProfileFormState extends State<ProfileForm> {
                 _generatedProfile.toString().isNotEmpty
                     ? CustomButton(
                   btnLabel: "SAVE",
-                  onPressed: () {
-                    _generatedDataStorageController
-                        .saveProfile(_generatedProfileController.text.trim());
-                    ScaffoldMessenger.of(context).showSnackBar(
+                  onPressed: () async{
+                    Map<String, dynamic> profile = {
+                      "userGivenString": _profileController.text,
+                      "aiGeneratedText": _generatedProfileController.text
+                    };
+
+                    var resp = await FormsService().addProfile(_userStorage.retrieveId(), profile);
+                    _generatedDataStorageController.saveProfile(_generatedProfileController.text.trim());
+                    resp == 201 ? ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
                           'Data Saved',
@@ -111,7 +121,7 @@ class _ProfileFormState extends State<ProfileForm> {
                         ),
                         backgroundColor: Colors.green,
                       ),
-                    );
+                    ): ToastMsg().errorToast("Something Gone Wrong");
                   },
                 )
                     : Container(),

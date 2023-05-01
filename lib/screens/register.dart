@@ -1,7 +1,10 @@
+import 'package:cvmaker_app_sarah_proj/services/api_services/UserService.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/genericBtn.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/textBtn.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/textFields.dart';
+import 'package:cvmaker_app_sarah_proj/widgets/toast_msg.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -12,11 +15,12 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final _loginFormKey = GlobalKey<FormState>();
+  final _registerFormKey = GlobalKey<FormState>();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController otpController = TextEditingController();
   final TextEditingController phoneNumController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -24,7 +28,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 33.0, vertical: 33),
           child: Form(
-            key: _loginFormKey,
+            key: _registerFormKey,
             child: SingleChildScrollView(
               child: Column(
                 // mainAxisAlignment: MainAxisAlignment.center,
@@ -84,8 +88,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     alignment: Alignment.centerRight,
                     child: CustomTextButton(
                       btnLabel: "Get OTP",
-                      onPressed: () {
-                        // Navigator.of(context).pushReplacementNamed("/register");
+                      onPressed: () async {
+                        if (_registerFormKey.currentState!.validate() ||
+                            emailController.text.isNotEmpty) {
+                          print("hello");
+                          var generatedOtp = await UserService()
+                              .generateOtp(emailController.text);
+                          if (generatedOtp != null) {
+                            ToastMsg().successToast(
+                                "Your OTP is ${generatedOtp.toString()}");
+                          } else {
+                            ToastMsg().errorToast(
+                                "Error Occurred");
+                          }
+                        }
                       },
                     ),
                   ),
@@ -105,9 +121,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: 30),
                   CustomButton(
-                    onPressed: () {
-                      if (_loginFormKey.currentState!.validate()) {
-                        Navigator.of(context).pushReplacementNamed("/home");
+                    onPressed: () async {
+                      if (_registerFormKey.currentState!.validate()) {
+                        Map<String, String> reqBody = {
+                          "name": nameController.text,
+                          "phnNumber": phoneNumController.text,
+                          "email": emailController.text
+                        };
+
+                        var resp = await UserService().registerUser(otpController.text, reqBody);
+                        if(resp == "OK"){
+                          ToastMsg().successToast("User created successfully");
+                          Navigator.of(context).pushReplacementNamed("/login");
+                        }else{
+                          ToastMsg().errorToast(resp);
+                        }
                       }
                     },
                     btnLabel: "REGISTER",
