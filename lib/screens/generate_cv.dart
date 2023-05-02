@@ -2,9 +2,10 @@ import 'dart:io';
 
 import 'package:cvmaker_app_sarah_proj/FormDataStorage.dart';
 import 'package:cvmaker_app_sarah_proj/UserDataStorage.dart';
-import 'package:cvmaker_app_sarah_proj/services/api_services/forms_service.dart';
+import 'package:cvmaker_app_sarah_proj/services/api_services/CVService.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/appbar.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/header.dart';
+import 'package:cvmaker_app_sarah_proj/widgets/toast_msg.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' hide Text;
 import 'package:get/get.dart';
@@ -21,6 +22,7 @@ class GenerateCVScreen extends StatefulWidget {
 class _GenerateCVScreenState extends State<GenerateCVScreen> {
   final _aiGeneratedDataController = Get.put(FormDataLocalStorage());
   final _userService = Get.put(UserDataStorage());
+  var _onSavedResp;
   final _picker = ImagePicker();
   File? _imageFile;
   GlobalKey key = GlobalKey();
@@ -130,7 +132,9 @@ class _GenerateCVScreenState extends State<GenerateCVScreen> {
               const SizedBox(
                 height: 20,
               ),
-              _aiGeneratedDataController.retrieveProfile().isNotEmpty?header("PROFILE"):Container(),
+              _aiGeneratedDataController.retrieveProfile().isNotEmpty
+                  ? header("PROFILE")
+                  : Container(),
               Padding(
                 padding:
                     const EdgeInsets.only(top: 10, left: 30.0, right: 30.0),
@@ -146,7 +150,9 @@ class _GenerateCVScreenState extends State<GenerateCVScreen> {
               const SizedBox(
                 height: 20,
               ),
-              _aiGeneratedDataController.retrieveEducation().isNotEmpty?header("EDUCATION"):Container(),
+              _aiGeneratedDataController.retrieveEducation().isNotEmpty
+                  ? header("EDUCATION")
+                  : Container(),
               Padding(
                 padding:
                     const EdgeInsets.only(top: 10, left: 30.0, right: 30.0),
@@ -162,19 +168,25 @@ class _GenerateCVScreenState extends State<GenerateCVScreen> {
               const SizedBox(
                 height: 20,
               ),
-              _aiGeneratedDataController.retrieveWorkExp() != "No Work Experience Added"?header("EXPERIENCE"):Container(),
-              _aiGeneratedDataController.retrieveWorkExp() != "No Work Experience Added" ? Padding(
-                padding:
-                    const EdgeInsets.only(top: 10, left: 30.0, right: 30.0),
-                child: Text(
-                  _aiGeneratedDataController.retrieveWorkExp(),
-                  style: GoogleFonts.poppins(
-                    fontSize: 15,
-                    letterSpacing: 1,
-                  ),
-                  textAlign: TextAlign.justify,
-                ),
-              ):Container(),
+              _aiGeneratedDataController.retrieveWorkExp() !=
+                      "No Work Experience Added"
+                  ? header("EXPERIENCE")
+                  : Container(),
+              _aiGeneratedDataController.retrieveWorkExp() !=
+                      "No Work Experience Added"
+                  ? Padding(
+                      padding: const EdgeInsets.only(
+                          top: 10, left: 30.0, right: 30.0),
+                      child: Text(
+                        _aiGeneratedDataController.retrieveWorkExp(),
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          letterSpacing: 1,
+                        ),
+                        textAlign: TextAlign.justify,
+                      ),
+                    )
+                  : Container(),
               const SizedBox(
                 height: 20,
               ),
@@ -230,8 +242,55 @@ class _GenerateCVScreenState extends State<GenerateCVScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.download),
-        onPressed: () {},
+        child: const Icon(Icons.save_alt),
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) {
+              var myForm = GlobalKey<FormState>();
+              var fileController = TextEditingController();
+              return Form(
+                key: myForm,
+                child: AlertDialog(
+                  title: const Text("SAVE CV"),
+                  content: TextFormField(
+                    controller: fileController,
+                    decoration: const InputDecoration(
+                      hintText: "Enter File Name",
+                    ),
+                    validator: (val) {
+                      if (val!.isEmpty) return "File name required to save CV";
+                      return null;
+                    },
+                  ),
+                  actions: [
+                    TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text(
+                          "Cancel",
+                          style: TextStyle(color: Colors.black),
+                        )),
+                    TextButton(onPressed: () async {
+                      if(myForm.currentState!.validate()){
+                        _onSavedResp = await CVService().saveCV(fileController.text);
+                        if(_onSavedResp["statusCode"] == 200)
+                          {
+                            ToastMsg().successToast("CV SAVED");
+                            Navigator.of(context).pushReplacementNamed("/home");
+                          }
+                        else {
+                          ToastMsg().errorToast("SOMETHING went wrong");
+                        }
+                      }
+                    }, child: const Text("SAVE")),
+                  ],
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }
@@ -276,36 +335,9 @@ class _GenerateCVScreenState extends State<GenerateCVScreen> {
     setState(() {});
   }
 
-  // void loadData() async{
-  //   await FormsService().fetchEducation(_userService.retrieveId());
-  // }
-
-// Future<void> saveAsPDF() async {
-//   RenderRepaintBoundary boundary =
-//   key.currentContext!.findRenderObject() as RenderRepaintBoundary;
-//   ui.Image image = await boundary.toImage(pixelRatio: 3.0);
-//   ByteData? byteData =
-//   await image.toByteData(format: ui.ImageByteFormat.rawRgba);
-//
-//   final pdf = pw.Document();
-//   pdf.addPage(pw.Page(
-//     pageFormat: PdfPageFormat.a4,
-//     build: (pw.Context context) {
-//       return pw.Image(
-//         PdfImage.file(
-//           pdf.document,
-//           bytes: byteData!.buffer.asUint8List(),
-//         ) as pw.ImageProvider ,
-//         width: image.width as double,
-//         height: image.height as double,
-//       );
-//     },
-//   ));
-//
-//   final bytes = await pdf.save();
-//   final directory = await getApplicationDocumentsDirectory();
-//   final file = File('${directory.path}/${_aiGeneratedDataController.userName}+${DateTime.now()}.pdf');
-//   await file.writeAsBytes(bytes);
+// void loadData() async{
+//   await FormsService().fetchEducation(_userService.retrieveId());
 // }
-}
 
+
+}

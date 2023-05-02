@@ -82,7 +82,7 @@ class _SkillsFormState extends State<SkillsForm> {
                           }
                         },
                       ),
-            /**
+                /**
              *    BELOW LINES OF CODE WILL ONLY VISIBLE IN APP WHEN WE GET AN RESPONSE FROM CHATGPT API
              *    AND THEN STORE IT IN _generatedSkills
              */
@@ -102,25 +102,31 @@ class _SkillsFormState extends State<SkillsForm> {
                 _generatedSkills.toString().isNotEmpty
                     ? CustomButton(
                         btnLabel: "SAVE",
-                        onPressed: () async{
+                        onPressed: () async {
                           Map<String, String> skills = {
                             "userGivenString": _skillsController.text,
-                            "aiGeneratedText": _generatedSkillsController.text.trim()
+                            "aiGeneratedText":
+                                _generatedSkillsController.text.trim()
                           };
-                          var resp = await FormsService().addSkills(_userService.retrieveId(), skills);
+                          var resp = await FormsService()
+                              .addSkills(_userService.retrieveId(), skills);
 
-                          _generatedDataStorageController
-                              .saveSkills(_generatedSkillsController.text.trim());
-                          resp == 201 ?ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Data Saved',
-                                style: GoogleFonts.poppins(
-                                    fontWeight: FontWeight.w900, fontSize: 20),
-                              ),
-                              backgroundColor: Colors.green,
-                            ),
-                          ): ToastMsg().errorToast("Something went wrong");
+                          _generatedDataStorageController.saveSkills(
+                              _generatedSkillsController.text.trim(),
+                              resp["body"]["data"]["profileId"].toString());
+                          resp["statusCode"] == 201
+                              ? ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Data Saved',
+                                      style: GoogleFonts.poppins(
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 20),
+                                    ),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                )
+                              : ToastMsg().errorToast("Something went wrong");
                         },
                       )
                     : Container(),

@@ -55,7 +55,8 @@ class _ProfileFormState extends State<ProfileForm> {
                 const SizedBox(height: 20),
                 CustomTextFields(
                   controller: _profileController,
-                  hintText: "Write few keywords to generate a profile/objective e.g, fresher etc.",
+                  hintText:
+                      "Write few keywords to generate a profile/objective e.g, fresher etc.",
                   maxLines: 5,
                   validator: (val) {
                     return null;
@@ -65,65 +66,72 @@ class _ProfileFormState extends State<ProfileForm> {
                 generatingContent
                     ? const CircularProgressIndicator()
                     : CustomButton(
-                  btnLabel: _generatedProfile.toString().isEmpty
-                      ? "GENERATE"
-                      : "REGENERATE",
-                  onPressed: () async {
-                    if (_profileFormKey.currentState!.validate()) {
-                      _generatedProfile = "";
-                      generatingContent = true;
-                      setState(() {});
-                      _generatedProfile = await AiHelper().generate(
-                          _profileController.value.text, "objective");
-                      _generatedProfileController.text = _generatedProfile;
-                      generatingContent = false;
-                      setState(() {});
-                    }
-                  },
-                ),
+                        btnLabel: _generatedProfile.toString().isEmpty
+                            ? "GENERATE"
+                            : "REGENERATE",
+                        onPressed: () async {
+                          if (_profileFormKey.currentState!.validate()) {
+                            _generatedProfile = "";
+                            generatingContent = true;
+                            setState(() {});
+                            _generatedProfile = await AiHelper().generate(
+                                _profileController.value.text, "objective");
+                            _generatedProfileController.text =
+                                _generatedProfile;
+                            generatingContent = false;
+                            setState(() {});
+                          }
+                        },
+                      ),
                 /**
-                 *    BELOW LINES OF CODE WILL ONLY VISIBLE IN APP WHEN WE GET AN RESPONSE FROM CHATGPT API
-                 *    AND THEN STORE IT IN _generatedSkills
-                 */
+             *    BELOW LINES OF CODE WILL ONLY VISIBLE IN APP WHEN WE GET AN RESPONSE FROM CHATGPT API
+             *    AND THEN STORE IT IN _generatedSkills
+             */
                 const SizedBox(height: 30),
                 _generatedProfile.toString().isNotEmpty
                     ? TextFormField(
-                  controller: _generatedProfileController,
-                  onSaved: (val) {
-                    _generatedProfileController.text = val!;
-                  },
-                  maxLines: 10,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                  ),
-                )
+                        controller: _generatedProfileController,
+                        onSaved: (val) {
+                          _generatedProfileController.text = val!;
+                        },
+                        maxLines: 10,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                        ),
+                      )
                     : Container(),
                 const SizedBox(height: 20),
                 _generatedProfile.toString().isNotEmpty
                     ? CustomButton(
-                  btnLabel: "SAVE",
-                  onPressed: () async{
-                    Map<String, dynamic> profile = {
-                      "userGivenString": _profileController.text,
-                      "aiGeneratedText": _generatedProfileController.text
-                    };
+                        btnLabel: "SAVE",
+                        onPressed: () async {
+                          Map<String, dynamic> profile = {
+                            "userGivenString": _profileController.text,
+                            "aiGeneratedText": _generatedProfileController.text
+                          };
 
-                    var resp = await FormsService().addProfile(_userStorage.retrieveId(), profile);
-                    _generatedDataStorageController.saveProfile(_generatedProfileController.text.trim());
-                    resp == 201 ? ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Data Saved',
-                          style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.w900, fontSize: 20),
-                        ),
-                        backgroundColor: Colors.green,
-                      ),
-                    ): ToastMsg().errorToast("Something Gone Wrong");
-                  },
-                )
+                          var resp = await FormsService()
+                              .addProfile(_userStorage.retrieveId(), profile);
+                          _generatedDataStorageController.saveProfile(
+                              _generatedProfileController.text.trim(),
+                              resp["body"]["data"]["profileId"].toString());
+                          resp["statusCode"] == 201
+                              ? ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Data Saved',
+                                      style: GoogleFonts.poppins(
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 20),
+                                    ),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                )
+                              : ToastMsg().errorToast("Something Gone Wrong");
+                        },
+                      )
                     : Container(),
               ],
             ),

@@ -7,9 +7,8 @@ import 'package:cvmaker_app_sarah_proj/widgets/genericBtn.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/textFields.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/toast_msg.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class WorkExperienceForm extends StatefulWidget {
   const WorkExperienceForm({Key? key}) : super(key: key);
@@ -34,6 +33,7 @@ class _WorkExperienceFormState extends State<WorkExperienceForm> {
     super.initState();
     _generatedWorkExp = "";
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,9 +54,8 @@ class _WorkExperienceFormState extends State<WorkExperienceForm> {
                 const SizedBox(height: 20),
                 CustomTextFields(
                   controller: _workExpController,
-                  hintText:
-                      "Write a brief about your past work experience. "
-                          "If you are fresher you can add your Internships and projects you work on....",
+                  hintText: "Write a brief about your past work experience. "
+                      "If you are fresher you can add your Internships and projects you work on....",
                   maxLines: 10,
                   validator: (val) {
                     // if (val == null || val.isEmpty) {
@@ -66,23 +65,27 @@ class _WorkExperienceFormState extends State<WorkExperienceForm> {
                   },
                 ),
                 const SizedBox(height: 20),
-                _generatingContent? const CircularProgressIndicator():CustomButton(
-                  btnLabel: _generatedWorkExp == "" ? "SAVE": "REGENERATE",
-                  onPressed: () async {
-                    if (_workExpFormKey.currentState!.validate()) {
+                _generatingContent
+                    ? const CircularProgressIndicator()
+                    : CustomButton(
+                        btnLabel:
+                            _generatedWorkExp == "" ? "SAVE" : "REGENERATE",
+                        onPressed: () async {
+                          if (_workExpFormKey.currentState!.validate()) {
+                            _generatedWorkExp = "";
+                            _generatingContent = true;
+                            setState(() {});
 
-                    _generatedWorkExp = "";
-                    _generatingContent = true;
-                    setState(() {});
-
-                      _generatedWorkExp = await AiHelper()
-                          .generate(_workExpController.value.text, "work experience");
-                      _generatedWorkExpController.text = _generatedWorkExp;
-                    _generatingContent = false;
-                      setState(() {});
-                    }
-                  },
-                ),
+                            _generatedWorkExp = await AiHelper().generate(
+                                _workExpController.value.text,
+                                "work experience");
+                            _generatedWorkExpController.text =
+                                _generatedWorkExp;
+                            _generatingContent = false;
+                            setState(() {});
+                          }
+                        },
+                      ),
                 /**
                  *    BELOW LINES OF CODE WILL ONLY VISIBLE IN APP WHEN WE GET AN RESPONSE FROM CHATGPT API
                  *    AND THEN STORE IT IN _generatedWrokExp
@@ -90,43 +93,49 @@ class _WorkExperienceFormState extends State<WorkExperienceForm> {
                 const SizedBox(height: 30),
                 _generatedWorkExp.toString().isNotEmpty
                     ? TextFormField(
-                  controller: _generatedWorkExpController,
-                  maxLines: 10,
-                  onSaved: (val) {
-                    _generatedWorkExpController.text = val!;
-                  },
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                  ),
-                )
+                        controller: _generatedWorkExpController,
+                        maxLines: 10,
+                        onSaved: (val) {
+                          _generatedWorkExpController.text = val!;
+                        },
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                        ),
+                      )
                     : Container(),
                 const SizedBox(height: 20),
                 _generatedWorkExp.toString().isNotEmpty
                     ? CustomButton(
-                  btnLabel: "SAVE",
-                  onPressed: () async{
-                    Map<String, String> workExp = {
-                      "userGivenString": _workExpController.text,
-                      "aiGeneratedText": _generatedWorkExpController.text.trim()
-                    };
-                    var resp = await FormsService().addWorkExp(_userService.retrieveId(), workExp);
+                        btnLabel: "SAVE",
+                        onPressed: () async {
+                          Map<String, String> workExp = {
+                            "userGivenString": _workExpController.text,
+                            "aiGeneratedText":
+                                _generatedWorkExpController.text.trim()
+                          };
+                          var resp = await FormsService()
+                              .addWorkExp(_userService.retrieveId(), workExp);
 
-                    _generatedDataStorageController
-                        .saveWorkExp(_generatedWorkExpController.text.trim());
-                    resp == 201?ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Data Saved',
-                          style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.w900, fontSize: 20),
-                        ),
-                        backgroundColor: Colors.green,
-                      ),
-                    ): ToastMsg().errorToast("Something went wrong");
-                  },
-                )
+                          _generatedDataStorageController.saveWorkExp(
+                              _generatedWorkExpController.text.trim(),
+                              resp["body"]["data"]["profileId"].toString());
+                          resp["statusCode"] == 201
+                              ? ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Data Saved',
+                                      style: GoogleFonts.poppins(
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 20),
+                                    ),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                )
+                              : ToastMsg().errorToast("Something went wrong");
+                        },
+                      )
                     : Container(),
               ],
             ),

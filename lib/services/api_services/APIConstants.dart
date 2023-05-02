@@ -18,3 +18,4 @@ String fetchHobbiesEndpoint = "/hobbies/fetch";
 
 String fetchAllCv = "/cv/fetchAllCV";
 String fetchCV = "/cv/fetch";
+String saveCv="/cv/save";

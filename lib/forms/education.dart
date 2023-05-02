@@ -7,8 +7,8 @@ import 'package:cvmaker_app_sarah_proj/widgets/genericBtn.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/textFields.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/toast_msg.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class EducationForm extends StatefulWidget {
   const EducationForm({Key? key}) : super(key: key);
@@ -78,54 +78,62 @@ class _EducationFormState extends State<EducationForm> {
                             _generatedEducation = await AiHelper().generate(
                                 _educationSummaryController.value.text,
                                 "education");
-                            _generatedEducationController.text = _generatedEducation;
+                            _generatedEducationController.text =
+                                _generatedEducation;
                             generatingContent = false;
                             setState(() {});
                           }
                         },
                       ),
                 /**
-             *    BELOW LINES OF CODE WILL ONLY VISIBLE IN APP WHEN WE GET AN RESPONSE FROM CHATGPT API
-             *    AND THEN STORE IT IN _generatedWrokExp
-             */
+                 *    BELOW LINES OF CODE WILL ONLY VISIBLE IN APP WHEN WE GET AN RESPONSE FROM CHATGPT API
+                 *    AND THEN STORE IT IN _generatedWrokExp
+                 */
                 const SizedBox(height: 30),
                 _generatedEducation.toString().isNotEmpty
                     ? TextFormField(
-                  controller: _generatedEducationController,
-                  maxLines: 10,
-                  onSaved: (val) {
-                    _generatedEducationController.text = val!;
-                  },
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                  ),
-                )
+                        controller: _generatedEducationController,
+                        maxLines: 10,
+                        onSaved: (val) {
+                          _generatedEducationController.text = val!;
+                        },
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                        ),
+                      )
                     : Container(),
                 const SizedBox(height: 20),
                 _generatedEducation.toString().isNotEmpty
                     ? CustomButton(
-                  btnLabel: "SAVE",
-                  onPressed: () async{
-                    Map<String, String> education = {
-                      "userGivenString": _educationSummaryController.text,
-                      "aiGeneratedText": _generatedEducationController.text.trim()
-                    };
-                    var resp = await FormsService().addEducation(_userService.retrieveId(), education);
-                    _generatedDataStorageController.saveEducation(_generatedEducationController.text.trim());
-                    resp == 201 ? ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Data Saved',
-                          style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.w900, fontSize: 20),
-                        ),
-                        backgroundColor: Colors.green,
-                      ),
-                    ): ToastMsg().errorToast("Something went wrong");
-                  },
-                )
+                        btnLabel: "SAVE",
+                        onPressed: () async {
+                          Map<String, String> education = {
+                            "userGivenString": _educationSummaryController.text,
+                            "aiGeneratedText":
+                                _generatedEducationController.text.trim()
+                          };
+                          var resp = await FormsService().addEducation(
+                              _userService.retrieveId(), education);
+                          _generatedDataStorageController.saveEducation(
+                              _generatedEducationController.text.trim(),
+                              resp["body"]["data"]["profileId"].toString());
+                          resp["statusCode"] == 201
+                              ? ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Data Saved',
+                                      style: GoogleFonts.poppins(
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 20),
+                                    ),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                )
+                              : ToastMsg().errorToast("Something went wrong");
+                        },
+                      )
                     : Container(),
               ],
             ),

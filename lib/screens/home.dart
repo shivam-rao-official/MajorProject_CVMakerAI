@@ -31,45 +31,55 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-          appBar: const PreferredSize(
-            preferredSize: Size.fromHeight(61),
-            child: CustomAppbar(
-              appBarLabel: "CV Maker",
-              isActionBtnRequired: true,
-            ),
+        appBar: const PreferredSize(
+          preferredSize: Size.fromHeight(61),
+          child: CustomAppbar(
+            appBarLabel: "CV Maker",
+            isActionBtnRequired: true,
           ),
-          drawer: CustomDrawer(),
-          body: FutureBuilder(
-            future: loadData(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting)
-                const Center(child: CircularProgressIndicator());
-              if (!snapshot.hasData) {
-                const Center(
-                  child: Text("No CV Found"),
+        ),
+        drawer: const CustomDrawer(),
+        body: FutureBuilder(
+          future: loadData(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              if (snapshot.hasError) {
+                return Center(
+                  child: Text("${snapshot.error} occurred"),
                 );
               }
-              return ListView.builder(
-                itemCount: (snapshot.data as List).length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ListTile(
-                      tileColor: Colors.blue.shade50,
-                      title: Text((snapshot.data! as List)[index]["cvName"]),
-                      onTap: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => ViewCVScreen(
-                           cvId: (snapshot.data! as List)[index]["cvId"],
-                          ),
-                        ));
-                      },
-                    ),
-                  );
-                },
-              );
-            },
-          )),
+              if (snapshot.hasData) {
+                return (snapshot.data as List).length != 0 ? ListView.builder(
+                  itemCount: (snapshot.data as List).length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ListTile(
+                        tileColor: Colors.blue.shade50,
+                        title: Text((snapshot.data! as List)[index]["cvName"]),
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => ViewCVScreen(
+                              cvId: (snapshot.data! as List)[index]["cvId"],
+                            ),
+                          ));
+                        },
+                      ),
+                    );
+                  },
+                ): const Center(
+                  child: Text("No CV created Yet."),
+                );
+              }
+            }
+            return const Center(child: CircularProgressIndicator());
+          },
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => loadData,
+          child: Icon(Icons.refresh_outlined),
+        ),
+      ),
     );
   }
 }

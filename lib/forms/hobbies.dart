@@ -7,8 +7,8 @@ import 'package:cvmaker_app_sarah_proj/widgets/genericBtn.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/textFields.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/toast_msg.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class HobbiesForm extends StatefulWidget {
   const HobbiesForm({Key? key}) : super(key: key);
@@ -82,9 +82,9 @@ class _HobbiesFormState extends State<HobbiesForm> {
                         },
                       ),
                 /**
-             *    BELOW LINES OF CODE WILL ONLY VISIBLE IN APP WHEN WE GET AN RESPONSE FROM CHATGPT API
-             *    AND THEN STORE IT IN _generatedWrokExp
-             */
+                 *    BELOW LINES OF CODE WILL ONLY VISIBLE IN APP WHEN WE GET AN RESPONSE FROM CHATGPT API
+                 *    AND THEN STORE IT IN _generatedWrokExp
+                 */
                 const SizedBox(height: 30),
                 _generatedHobbies.toString().isNotEmpty
                     ? TextFormField(
@@ -104,23 +104,30 @@ class _HobbiesFormState extends State<HobbiesForm> {
                 _generatedHobbies.toString().isNotEmpty
                     ? CustomButton(
                         btnLabel: "SAVE",
-                        onPressed: ()  async{
+                        onPressed: () async {
                           Map<String, String> education = {
                             "userGivenString": _hobbiesController.text,
-                            "aiGeneratedText": _generatedHobbyController.text.trim()
+                            "aiGeneratedText":
+                                _generatedHobbyController.text.trim()
                           };
-                          var resp = await FormsService().addHobbies(_userService.retrieveId(), education);
-                          _generatedDataStorageController.saveHobbies(_generatedHobbyController.text.trim());
-                          resp == 201 ? ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Data Saved',
-                                  style: GoogleFonts.poppins(
-                                      fontWeight: FontWeight.w900, fontSize: 20),
-                                ),
-                                backgroundColor: Colors.green,
-                              ),
-                          ):ToastMsg().errorToast("Something went wrong");
+                          var resp = await FormsService()
+                              .addHobbies(_userService.retrieveId(), education);
+                          _generatedDataStorageController.saveHobbies(
+                              _generatedHobbyController.text.trim(),
+                              resp["body"]["data"]["profileId"].toString());
+                          resp["statusCode"] == 201
+                              ? ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Data Saved',
+                                      style: GoogleFonts.poppins(
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 20),
+                                    ),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                )
+                              : ToastMsg().errorToast("Something went wrong");
                         },
                       )
                     : Container(),

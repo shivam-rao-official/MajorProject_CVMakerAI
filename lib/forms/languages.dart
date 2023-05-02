@@ -111,8 +111,9 @@ class _LanguageFormState extends State<LanguageForm> {
                     };
                     var resp = await FormsService().addLanguage(_userService.retrieveId(), education);
                     _generatedDataStorageController
-                        .saveLanguage(_generatedLanguageController.text.trim());
-                    resp == 201 ? ScaffoldMessenger.of(context).showSnackBar(
+                        .saveLanguage(_generatedLanguageController.text.trim(),
+                        resp["body"]["data"]["profileId"].toString());
+                    resp["statusCode"] == 201? ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
                           'Data Saved',

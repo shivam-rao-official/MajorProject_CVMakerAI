@@ -15,7 +15,7 @@ class FormsService {
     var body = jsonEncode(reqBody);
     var resp = await http.post(url, headers: _header, body: body);
     var decodedResp = jsonDecode(resp.body);
-    return decodedResp["statusCode"];
+    return decodedResp;
   }
 
   Future<dynamic> addEducation(
@@ -26,8 +26,7 @@ class FormsService {
     var body = jsonEncode(reqBody);
     var resp = await http.post(url, headers: _header, body: body);
     var decodedResp = jsonDecode(resp.body);
-    // print(decodedResp["statusCode"]);
-    return decodedResp["statusCode"];
+    return decodedResp;
   }
 
   Future<dynamic> addSkills(
@@ -37,7 +36,7 @@ class FormsService {
     var body = jsonEncode(reqBody);
     var resp = await http.post(url, headers: _header, body: body);
     var decodedResp = jsonDecode(resp.body);
-    return decodedResp["statusCode"];
+    return decodedResp;
   }
 
   Future<dynamic> addWorkExp(
@@ -48,7 +47,7 @@ class FormsService {
     var resp = await http.post(url, headers: _header, body: body);
     var decodedResp = jsonDecode(resp.body);
     print(decodedResp["statusCode"]);
-    return decodedResp["statusCode"];
+    return decodedResp;
   }
 
   Future<dynamic> addHobbies(
@@ -59,7 +58,7 @@ class FormsService {
     var resp = await http.post(url, headers: _header, body: body);
     var decodedResp = jsonDecode(resp.body);
     print(decodedResp["statusCode"]);
-    return decodedResp["statusCode"];
+    return decodedResp;
   }
 
   Future<dynamic> addLanguage(
@@ -70,7 +69,7 @@ class FormsService {
     var resp = await http.post(url, headers: _header, body: body);
     var decodedResp = jsonDecode(resp.body);
     print(decodedResp["statusCode"]);
-    return decodedResp["statusCode"];
+    return decodedResp;
   }
 
   fetchCv(int cvId) async{
@@ -79,6 +78,6 @@ class FormsService {
     var resp = await http.get(url, headers: _header);
     var decodedResp = jsonDecode(resp.body);
     print(decodedResp);
-    // return decodedResp["statusCode"];
+    return decodedResp;
   }
 }

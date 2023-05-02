@@ -30,15 +30,15 @@ class CustomDrawer extends StatelessWidget {
               ),
             ),
           ),
-          Align(
-              alignment: Alignment.centerRight,
-              child: CustomTextBtnWithIcon(
-                  btnLabel: "Add/Update Personal Details",
-                  onPressed: () {
-                    Navigator.of(context).pushNamed("/form-personalDetail",
-                        arguments: {"masterScreen": "GenerateCV"});
-                  },
-                  icon: Icons.person_outline_outlined)),
+          // Align(
+          //     alignment: Alignment.centerRight,
+          //     child: CustomTextBtnWithIcon(
+          //         btnLabel: "Add/Update Personal Details",
+          //         onPressed: () {
+          //           Navigator.of(context).pushNamed("/form-personalDetail",
+          //               arguments: {"masterScreen": "GenerateCV"});
+          //         },
+          //         icon: Icons.person_outline_outlined)),
           Align(
               alignment: Alignment.centerRight,
               child: CustomTextBtnWithIcon(
@@ -67,15 +67,18 @@ class CustomDrawer extends StatelessWidget {
               icon: Icons.add,
             ),
           ),
-          Align(
-              alignment: Alignment.centerRight,
-              child: CustomTextBtnWithIcon(
-                btnLabel: "Add/Update Work Ex.",
-                onPressed: () {
-                  Navigator.of(context).pushNamed("/form-workExperienceForm");
-                },
-                icon: Icons.work_outline,
-              )),
+          /**
+           * WORK EXP TAB
+           */
+          // Align(
+          //     alignment: Alignment.centerRight,
+          //     child: CustomTextBtnWithIcon(
+          //       btnLabel: "Add/Update Work Ex.",
+          //       onPressed: () {
+          //         Navigator.of(context).pushNamed("/form-workExperienceForm");
+          //       },
+          //       icon: Icons.work_outline,
+          //     )),
           Align(
               alignment: Alignment.centerRight,
               child: CustomTextBtnWithIcon(
