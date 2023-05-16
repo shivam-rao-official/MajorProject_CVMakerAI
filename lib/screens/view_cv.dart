@@ -1,18 +1,18 @@
 import 'dart:io';
-import 'dart:ui' as ui;
-import 'dart:typed_data';
+import 'dart:ui' as UI;
 
 import 'package:cvmaker_app_sarah_proj/UserDataStorage.dart';
 import 'package:cvmaker_app_sarah_proj/services/api_services/forms_service.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/appbar.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-// import 'package:pdf/pdf.dart';
-// import 'package:pdf/widgets.dart' as pw;
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 
 import '../widgets/header.dart';
 
@@ -39,6 +39,7 @@ class _ViewCVScreenState extends State<ViewCVScreen> {
   String? profile;
   String? skills;
   String? languages;
+  String? workExp;
   String? hobbies;
   bool isLoading = false;
 
@@ -76,8 +77,8 @@ class _ViewCVScreenState extends State<ViewCVScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         /**
-                         * FOR DISPLAYING IMAGE
-                         */
+             * FOR DISPLAYING IMAGE
+             */
                         // GestureDetector(
                         //   onTap: () => takePhoto(ImageSource.gallery),
                         //   child: Container(
@@ -100,11 +101,13 @@ class _ViewCVScreenState extends State<ViewCVScreen> {
                         Container(
                           color: Colors.yellow[200],
                           height: 100,
-                          width: MediaQuery.of(context).size.width,
-                          // width: (MediaQuery.of(context).size.width - 10) -
+                          width: MediaQuery.of(context)
+                              .size
+                              .width, // width: (MediaQuery.of(context).size.width - 10) -
                           //     (MediaQuery.of(context).size.width / 4),
                           child: Padding(
-                            padding: const EdgeInsets.only(top:8.0, left: 30.0, bottom: 8.0),
+                            padding: const EdgeInsets.only(
+                                top: 8.0, left: 30.0, bottom: 8.0),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -187,22 +190,21 @@ class _ViewCVScreenState extends State<ViewCVScreen> {
                     const SizedBox(
                       height: 20,
                     ),
-                    // _aiGeneratedDataController.retrieveWorkExp() !=
-                    //         "No Work Experience Added"
-                    //     ? header("EXPERIENCE"),
-                    //     ? Padding(
-                    //         padding: const EdgeInsets.only(
-                    //             top: 10, left: 30.0, right: 30.0),
-                    //         child: Text(
-                    //           "workExp",
-                    //           style: GoogleFonts.poppins(
-                    //             fontSize: 15,
-                    //             letterSpacing: 1,
-                    //           ),
-                    //           textAlign: TextAlign.justify,
-                    //         ),
-                    //       )
-                    //     : Container(),
+                    workExp!.isNotEmpty ? header("EXPERIENCE") : Container(),
+                    workExp!.isNotEmpty
+                        ? Padding(
+                            padding: const EdgeInsets.only(
+                                top: 10, left: 30.0, right: 30.0),
+                            child: Text(
+                              workExp!,
+                              style: GoogleFonts.poppins(
+                                fontSize: 15,
+                                letterSpacing: 1,
+                              ),
+                              textAlign: TextAlign.justify,
+                            ),
+                          )
+                        : Container(),
                     const SizedBox(
                       height: 20,
                     ),
@@ -257,10 +259,13 @@ class _ViewCVScreenState extends State<ViewCVScreen> {
                 ),
               ),
             ),
-      // floatingActionButton: FloatingActionButton(
-      //   child: const Icon(Icons.download),
-      //   onPressed: () {},
-      // ),
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.download),
+        onPressed: () async {
+          saveAsPDF();
+          print("CV SAVED");
+        },
+      ),
     );
   }
 
@@ -281,37 +286,36 @@ class _ViewCVScreenState extends State<ViewCVScreen> {
     education = resp["body"]["education"];
     skills = resp["body"]["skills"];
     languages = resp["body"]["languages"];
+    workExp = resp["body"]["workExp"];
     hobbies = resp["body"]["hobbies"];
     isLoading = false;
     setState(() {});
   }
 
-//
-// Future<void> saveAsPDF() async {
-//   RenderRepaintBoundary boundary =
-//   key.currentContext!.findRenderObject() as RenderRepaintBoundary;
-//   ui.Image image = await boundary.toImage(pixelRatio: 3.0);
-//   ByteData? byteData =
-//   await image.toByteData(format: ui.ImageByteFormat.rawRgba);
-//
-//   final pdf = pw.Document();
-//   pdf.addPage(pw.Page(
-//     pageFormat: PdfPageFormat.a4,
-//     build: (pw.Context context) {
-//       return pw.Image(
-//         PdfImage.file(
-//           pdf.document,
-//           bytes: byteData!.buffer.asUint8List(),
-//         ) as pw.ImageProvider ,
-//         width: image.width as double,
-//         height: image.height as double,
-//       );
-//     },
-//   ));
-//
-//   final bytes = await pdf.save();
-//   final directory = await getApplicationDocumentsDirectory();
-//   final file = File('${directory.path}/${_userService.retrieveName()}+${DateTime.now()}.pdf');
-//   await file.writeAsBytes(bytes);
-// }
+  Future<void> saveAsPDF() async {
+    RenderRepaintBoundary boundary =
+        key.currentContext!.findRenderObject() as RenderRepaintBoundary;
+    UI.Image image = await boundary.toImage();
+    ByteData? byteData =
+        await image.toByteData(format: UI.ImageByteFormat.png);
+    Uint8List pngBytes = byteData!.buffer.asUint8List();
+
+    final pdf = pw.Document();
+    pdf.addPage(pw.Page(
+      pageFormat: PdfPageFormat.a4,
+      build: (pw.Context context) {
+        return pw.Image(
+         pw.MemoryImage(pngBytes)
+        );
+      },
+    ));
+
+    final directory = await getApplicationDocumentsDirectory();
+    final file = File(
+        '${directory.path}/${_userService.retrieveName()}${DateTime.now()}.pdf');
+    print(file.toString());
+    await file.writeAsBytes(await pdf.save());
+  }
+
+
 }

@@ -1,4 +1,4 @@
-String baseUrl = "http://192.168.225.24:8080/public/api/v1";
+String baseUrl = "http://192.168.0.115:8080/public/api/v1";
 String registerEndpoint = "/user/register";
 String loginEndpoint = "/user/login";
 String generateOtpEndpoint = "/otp/generate";

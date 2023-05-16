@@ -70,15 +70,15 @@ class CustomDrawer extends StatelessWidget {
           /**
            * WORK EXP TAB
            */
-          // Align(
-          //     alignment: Alignment.centerRight,
-          //     child: CustomTextBtnWithIcon(
-          //       btnLabel: "Add/Update Work Ex.",
-          //       onPressed: () {
-          //         Navigator.of(context).pushNamed("/form-workExperienceForm");
-          //       },
-          //       icon: Icons.work_outline,
-          //     )),
+          Align(
+              alignment: Alignment.centerRight,
+              child: CustomTextBtnWithIcon(
+                btnLabel: "Add/Update Work Ex.",
+                onPressed: () {
+                  Navigator.of(context).pushNamed("/form-workExperienceForm");
+                },
+                icon: Icons.work_outline,
+              )),
           Align(
               alignment: Alignment.centerRight,
               child: CustomTextBtnWithIcon(

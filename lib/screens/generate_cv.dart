@@ -275,7 +275,8 @@ class _GenerateCVScreenState extends State<GenerateCVScreen> {
                     TextButton(onPressed: () async {
                       if(myForm.currentState!.validate()){
                         _onSavedResp = await CVService().saveCV(fileController.text);
-                        if(_onSavedResp["statusCode"] == 200)
+                        print(_onSavedResp["statusCode"]);
+                        if(_onSavedResp["statusCode"] == 201)
                           {
                             ToastMsg().successToast("CV SAVED");
                             Navigator.of(context).pushReplacementNamed("/home");

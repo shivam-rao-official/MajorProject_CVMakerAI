@@ -18,7 +18,6 @@ class CVService {
 
     var resp = await http.get(url, headers: _header);
     var decodedResp = jsonDecode(resp.body);
-    print(decodedResp);
     return decodedResp["body"]["data"];
   }
 
@@ -29,6 +28,7 @@ class CVService {
     var body = jsonEncode(req);
     var resp = await http.post(url, headers: _header,body: body);
     var decodedResp = jsonDecode(resp.body);
+    print(decodedResp.toString());
     return decodedResp;
   }
 
