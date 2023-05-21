@@ -1,18 +1,16 @@
 import 'dart:io';
-import 'dart:ui' as UI;
 
 import 'package:cvmaker_app_sarah_proj/UserDataStorage.dart';
 import 'package:cvmaker_app_sarah_proj/services/api_services/forms_service.dart';
 import 'package:cvmaker_app_sarah_proj/widgets/appbar.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:permission_handler/permission_handler.dart';
 
 import '../widgets/header.dart';
 
@@ -34,6 +32,9 @@ class _ViewCVScreenState extends State<ViewCVScreen> {
   File? _imageFile;
   var text;
   GlobalKey key = GlobalKey();
+
+  final doc = pw.Document();
+  double? pdfWidth;
 
   String? education;
   String? profile;
@@ -262,11 +263,33 @@ class _ViewCVScreenState extends State<ViewCVScreen> {
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.download),
         onPressed: () async {
-          saveAsPDF();
-          print("CV SAVED");
+          if (await _requestPermission(Permission.manageExternalStorage)) {
+            saveAsPDF();
+          }
+          //
+          // print("CV SAVED");
         },
       ),
     );
+  }
+
+  Future<bool> _requestPermission(Permission permission) async {
+    // if (await permission.isGranted) {
+    //   return true;
+    // } else {
+    //   var result = await permission.request();
+    //   if (result == PermissionStatus.granted) {
+    //     return true;
+    //   } else {
+    //     return false;
+    //   }
+    // }
+    PermissionStatus permissionStatus = await permission.status;
+    if (permissionStatus.isDenied) {
+      permissionStatus = await permission.request();
+    }
+    print(permissionStatus);
+    return true;
   }
 
   void takePhoto(ImageSource source) async {
@@ -278,6 +301,7 @@ class _ViewCVScreenState extends State<ViewCVScreen> {
   }
 
   void loadData() async {
+    // pdfWidth = MediaQuery.of(context).size.width;
     isLoading = true;
     setState(() {});
     var resp = await FormsService().fetchCv(widget.cvId);
@@ -292,30 +316,197 @@ class _ViewCVScreenState extends State<ViewCVScreen> {
     setState(() {});
   }
 
-  Future<void> saveAsPDF() async {
-    RenderRepaintBoundary boundary =
-        key.currentContext!.findRenderObject() as RenderRepaintBoundary;
-    UI.Image image = await boundary.toImage();
-    ByteData? byteData =
-        await image.toByteData(format: UI.ImageByteFormat.png);
-    Uint8List pngBytes = byteData!.buffer.asUint8List();
+  saveAsPDF() async {
+    doc.addPage(pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context ctxt) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              /**
+         * HEADER SECTION
+         */
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  /**
+           * FOR DISPLAYING IMAGE
+           */
+                  // GestureDetector(
+                  //   onTap: () => takePhoto(ImageSource.gallery),
+                  //   child: Container(
+                  //       color: Colors.green,
+                  //       height: 100,
+                  //       width: MediaQuery.of(context).size.width / 4,
+                  //       child: _imageFile == null
+                  //           ? const Placeholder(
+                  //               child: Center(
+                  //                 child: Text("IMAGE"),
+                  //               ),
+                  //             )
+                  //           : Container(
+                  //               decoration: BoxDecoration(
+                  //                   image: DecorationImage(
+                  //                       image: FileImage(_imageFile!),
+                  //                       fit: BoxFit.fill)),
+                  //             )),
+                  // ),
+                  pw.Container(
+                    color: PdfColor.fromHex('#ffd966'),
+                    height: 100,
+                    width: MediaQuery.of(context)
+                        .size
+                        .width, // width: (MediaQuery.of(context).size.width - 10) -
+                    //     (MediaQuery.of(context).size.width / 4),
+                    child: pw.Padding(
+                      padding: const pw.EdgeInsets.only(
+                          top: 8.0, left: 30.0, bottom: 8.0),
+                      child: pw.Column(
+                        mainAxisAlignment: pw.MainAxisAlignment.center,
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Text(
+                            _userService.retrieveName().isEmpty
+                                ? "{USER NAME}"
+                                : _userService.retrieveName(),
+                            style:
+                            pw.TextStyle(color:PdfColor.fromHex('#000000'), fontSize: 18),
+                          ),
+                          pw.Text(
+                            "STUDENT",
+                              style:
+                              pw.TextStyle(color:PdfColor.fromHex('#000000'), fontSize: 18)
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              /**
+         * DETAILS SECTION
+         */
+              pw.SizedBox(
+                height: 20,
+              ),
+              pwHeader("DETAILS"),
+              pw.Padding(
+                padding:
+                    const pw.EdgeInsets.only(top: 10, left: 30.0, right: 30.0),
+                child: pw.Text(
+                  _userService.retrieveLinkedInUrl().isNotEmpty
+                      ? "Email: ${_userService.retrieveEmail()}\nPhone Number: ${_userService.retrievePhone()}\nLinkedInUrl: ${_userService.retrieveLinkedInUrl()}"
+                      : "Email: ${_userService.retrieveEmail()}\nPhone Number: ${_userService.retrievePhone()}",
+                  textAlign: pw.TextAlign.justify,
+                ),
+              ),
+              pw.SizedBox(
+                height: 20,
+              ),
+              pwHeader("PROFILE"),
+              pw.Padding(
+                padding:
+                    const pw.EdgeInsets.only(top: 10, left: 30.0, right: 30.0),
+                child: pw.Text(
+                  profile!,
+                  textAlign: pw.TextAlign.justify,
+                ),
+              ),
+              pw.SizedBox(
+                height: 20,
+              ),
+              pwHeader("EDUCATION"),
+              pw.Padding(
+                padding:
+                    const pw.EdgeInsets.only(top: 10, left: 30.0, right: 30.0),
+                child: pw.Text(
+                  education!,
+                  textAlign: pw.TextAlign.justify,
+                ),
+              ),
+              pw.SizedBox(
+                height: 20,
+              ),
+              workExp!.isNotEmpty ? pwHeader("EXPERIENCE") : pw.Container(),
+              workExp!.isNotEmpty
+                  ? pw.Padding(
+                      padding: const pw.EdgeInsets.only(
+                          top: 10, left: 30.0, right: 30.0),
+                      child: pw.Text(
+                        workExp!,
+                        textAlign: pw.TextAlign.justify,
+                      ),
+                    )
+                  : pw.Container(),
+              pw.SizedBox(
+                height: 20,
+              ),
+              pwHeader("SKILLS"),
+              pw.Padding(
+                padding:
+                    const pw.EdgeInsets.only(top: 10, left: 30.0, right: 30.0),
+                child: pw.Text(
+                  skills!,
+                ),
+              ),
+              pw.SizedBox(
+                height: 20,
+              ),
+              pwHeader("LANGUAGES"),
+              pw.Padding(
+                padding:
+                    const pw.EdgeInsets.only(top: 10, left: 30.0, right: 30.0),
+                child: pw.Text(
+                  languages!,
+                  textAlign: pw.TextAlign.justify,
+                ),
+              ),
+              pw.SizedBox(
+                height: 20,
+              ),
+              pwHeader("HOBBIES"),
+              pw.Padding(
+                padding:
+                    const pw.EdgeInsets.only(top: 10, left: 30.0, right: 30.0),
+                child: pw.Text(
+                  hobbies!,
+                  style: const pw.TextStyle(
+                    fontSize: 15,
+                    letterSpacing: 1,
+                  ),
+                  textAlign: pw.TextAlign.justify,
+                ),
+              ),
+              pw.SizedBox(
+                height: 20,
+              ),
+            ],
+          );
+        }));
 
-    final pdf = pw.Document();
-    pdf.addPage(pw.Page(
-      pageFormat: PdfPageFormat.a4,
-      build: (pw.Context context) {
-        return pw.Image(
-         pw.MemoryImage(pngBytes)
-        );
-      },
-    ));
+    // RenderRepaintBoundary boundary =
+    //     key.currentContext!.findRenderObject() as RenderRepaintBoundary;
+    // UI.Image image = await boundary.toImage();
+    // ByteData? byteData =
+    //     await image.toByteData(format: UI.ImageByteFormat.png);
+    // Uint8List pngBytes = byteData!.buffer.asUint8List();
+    //
+    // final pdf = pw.Document();
+    // pdf.addPage(pw.Page(
+    //   pageFormat: PdfPageFormat.a4,
+    //   build: (pw.Context context) {
+    //     return pw.Image(
+    //      pw.MemoryImage(pngBytes)
+    //     );
+    //   },
+    // ));
+    //
+    final directory = await getExternalStorageDirectory();
+    String pathToWrite =
+        '${directory?.path}/${_userService.retrieveName().removeAllWhitespace}${DateTime.now()}.pdf';
+    final file = File(pathToWrite);
+    print(pathToWrite);
 
-    final directory = await getApplicationDocumentsDirectory();
-    final file = File(
-        '${directory.path}/${_userService.retrieveName()}${DateTime.now()}.pdf');
-    print(file.toString());
-    await file.writeAsBytes(await pdf.save());
+    file.writeAsBytesSync(await doc.save());
   }
-
-
 }
